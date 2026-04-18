@@ -139,7 +139,6 @@
     line-height: 1;
     letter-spacing: -2px;
     color: #111;
-    transition: color 1.2s ease;
   }
   #water-unit {
     font-family: var(--mono);
@@ -157,11 +156,10 @@
     text-transform: uppercase;
     margin-top: 16px;
     color: #111;
-    transition: color 0.8s ease;
   }
   .safe    #water-status-badge { color: #1db954; }
-  .warning #water-status-badge { color: #f5a623; }
-  .danger  #water-status-badge { color: #e5193a; }
+  .warning #water-status-badge { color: #7a4f00; }
+  .danger  #water-status-badge { color: #7a0010; }
 
   /* ── RIGHT COLUMN ── */
   #right-col {
@@ -364,6 +362,74 @@
     color: #555;
     flex-shrink: 0;
   }
+  /* ── UNLOCK OVERLAY ── */
+  #unlock-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    cursor: pointer;
+    gap: 16px;
+  }
+  #unlock-overlay-box {
+    background: #111;
+    border: 1px solid #333;
+    padding: 32px 48px;
+    text-align: center;
+    border-radius: 2px;
+  }
+  #unlock-overlay-box .u-title {
+    font-family: 'IBMPlexSansThai', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    color: #555;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  #unlock-overlay-box .u-main {
+    font-family: 'IBMPlexSansThai', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.04em;
+  }
+  #unlock-overlay-box .u-sub {
+    font-family: 'IBMPlexSansThai', sans-serif;
+    font-size: 12px;
+    color: #666;
+    margin-top: 8px;
+    letter-spacing: 0.05em;
+  }
+
+
+  /* ── EVACUATE CAPTION ── */
+  #bb-caption.evacuate-mode {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #ff4444;
+    overflow: visible;
+    display: flex;
+    gap: 10px;
+    white-space: nowrap;
+    text-overflow: clip;
+    justify-content: center;
+    width: 100%;
+  }
+  @keyframes letterSlideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  .evac-letter {
+    display: inline-block;
+    animation: letterSlideUp 0.35s ease forwards;
+    opacity: 0;
+  }
 
 </style>
 </head>
@@ -459,6 +525,15 @@
   </div>
 </div>
 
+<!-- AUDIO UNLOCK OVERLAY -->
+<div id="unlock-overlay" onclick="unlockAudio()">
+  <div id="unlock-overlay-box">
+    <div class="u-title">StreetFlood Monitor</div>
+    <div class="u-main">Click anywhere to start</div>
+    <div class="u-sub">คลิกที่ใดก็ได้เพื่อเริ่ม</div>
+  </div>
+</div>
+
 <!-- BOTTOM BAR -->
 <div id="bottombar">
   <span id="bb-label">ANN</span>
@@ -472,8 +547,8 @@
 // ── CONFIG ──────────────────────────────────────────────────────────────────
 const SAFE_MAX    = 4;
 const WARNING_MAX = 10;
-const API_BASE    = 'http://localhost:5000';   // ← change IP if dashboard runs on a different machine
-const POLL_MS     = 3000;                       // poll every 3 seconds
+const API_BASE    = 'http://localhost:5000';
+const POLL_MS     = 3000;
 
 // ── STATE ────────────────────────────────────────────────────────────────────
 let currentLevel  = 0;
@@ -526,19 +601,16 @@ function barColor(s) { return {safe:'#1db954',warning:'#f5a623',danger:'#e5193a'
 // ── WIFI VISUAL ───────────────────────────────────────────────────────────────
 function updateWifi(pingMs) {
   const hasSignal = pingMs !== null && pingMs !== undefined;
-  let bars = 0;
-  let cls  = 'off';
+  let bars = 0, cls = 'off';
   if (hasSignal) {
     cls  = pingMs < 200 ? 'on' : 'warn';
     bars = pingMs < 80 ? 3 : pingMs < 200 ? 2 : 1;
   }
   const arcCls = (active) => 'wifi-arc ' + (active ? cls : 'off');
-
-  // SVG elements need setAttribute, not .className
   document.getElementById('wifi-arc1').setAttribute('class', arcCls(bars >= 1));
   document.getElementById('wifi-arc2').setAttribute('class', arcCls(bars >= 2));
   document.getElementById('wifi-arc3').setAttribute('class', arcCls(bars >= 3));
-  document.getElementById('wifi-dot').setAttribute('class',  'wifi-dot ' + (hasSignal ? cls : 'off'));
+  document.getElementById('wifi-dot').setAttribute('class', 'wifi-dot ' + (hasSignal ? cls : 'off'));
   document.getElementById('wifi-ping').textContent = hasSignal ? `${pingMs} ms` : '— ms';
 }
 
@@ -546,73 +618,225 @@ function updateWifi(pingMs) {
 function updateLink(dbOk) {
   const line = document.getElementById('link-line');
   const icon = document.getElementById('link-icon');
-  if (dbOk) {
-    line.className = 'link-line ok';
-    icon.className = 'link-status-icon ok';
-    icon.textContent = '✓';
-  } else {
-    line.className = 'link-line fail';
-    icon.className = 'link-status-icon fail';
-    icon.textContent = '✕';
+  line.className = 'link-line ' + (dbOk ? 'ok' : 'fail');
+  icon.className = 'link-status-icon ' + (dbOk ? 'ok' : 'fail');
+  icon.textContent = dbOk ? '✓' : '✕';
+}
+
+// ── AUDIO UNLOCK ─────────────────────────────────────────────────────────────
+// Browsers block audio until a user gesture. Show a click-to-start overlay.
+let audioUnlocked = false;
+let beepCtx       = null;
+
+function unlockAudio() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+
+  // Create and immediately resume AudioContext
+  beepCtx = new (window.AudioContext || window.webkitAudioContext)();
+  beepCtx.resume();
+
+  // Pre-load announcement Audio objects now that we have a gesture
+  audioFiles.safe    = new Audio('safe.MP3');
+  audioFiles.warning = new Audio('warning.MP3');
+  audioFiles.danger  = new Audio('danger.MP3');
+
+  // Hide overlay
+  const overlay = document.getElementById('unlock-overlay');
+  if (overlay) overlay.style.display = 'none';
+
+  // Re-trigger announce in case status was already set before unlock
+  const s = getStatus(currentLevel);
+  if (s !== 'safe') {
+    lastAnnStatus = null;
+    announce(s);
   }
 }
 
 // ── AUDIO ─────────────────────────────────────────────────────────────────────
-const audioFiles = {
-  safe:    new Audio('safe.MP3'),
-  warning: new Audio('warning.MP3'),
-  danger:  new Audio('danger.MP3'),
-};
-let currentAudio = null;
+const audioFiles = { safe: null, warning: null, danger: null };
+let currentAudio  = null;
+let beepInterval  = null;
 
-function loadAudio(status, input) {}   // no-op, kept to avoid errors
-function previewAudio(status) {}
-function openAudioPanel()  {}
-function closeAudioPanel() {}
+function stopBeep() {
+  if (beepInterval) { clearInterval(beepInterval); beepInterval = null; }
+}
+
+function makeBeep(freq, startOffset, duration, vol) {
+  if (!beepCtx) return;
+  const osc  = beepCtx.createOscillator();
+  const gain = beepCtx.createGain();
+  osc.connect(gain);
+  gain.connect(beepCtx.destination);
+  osc.frequency.value = freq;
+  gain.gain.value = vol;
+  const t = beepCtx.currentTime + startOffset;
+  osc.start(t);
+  osc.stop(t + duration);
+}
+
+function startWarningBeep() {
+  stopBeep();
+  if (!beepCtx) return;
+  const playOne = () => makeBeep(660, 0, 0.15, 0.08);
+  playOne();
+  beepInterval = setInterval(playOne, 3000);
+}
+
+function startDangerBeep() {
+  stopBeep();
+  if (!beepCtx) return;
+  const playPattern = () => {
+    makeBeep(880, 0.00, 0.15, 0.35);
+    makeBeep(880, 0.22, 0.15, 0.35);
+    makeBeep(880, 0.44, 0.15, 0.35);
+  };
+  playPattern();
+  beepInterval = setInterval(playPattern, 1800);
+}
+
+// ── EVACUATE CAPTION ──────────────────────────────────────────────────────────
+let evacuateShowing = false;
+let evacuateLangEN  = true;
+let evacuateLangTimer = null;
+
+function showEvacuateCaption() {
+  evacuateShowing = true;
+  evacuateLangEN  = langEN;
+  renderEvacuate(evacuateLangEN);
+
+  evacuateLangTimer = setInterval(() => {
+    evacuateLangEN = !evacuateLangEN;
+    renderEvacuate(evacuateLangEN);
+  }, 4000);
+}
+
+function renderEvacuate(isEN) {
+  const el   = document.getElementById('bb-caption');
+  const word = isEN ? 'EVACUATE' : 'อพยพ';
+  el.className = 'evacuate-mode';
+  el.innerHTML = '';
+  [...word].forEach((ch, i) => {
+    const span = document.createElement('span');
+    span.className   = 'evac-letter';
+    span.textContent = ch === ' ' ? '\u00a0' : ch;
+    span.style.animationDelay = `${i * 0.07}s`;
+    el.appendChild(span);
+  });
+}
+
+function stopEvacuateCaption() {
+  evacuateShowing = false;
+  if (evacuateLangTimer) { clearInterval(evacuateLangTimer); evacuateLangTimer = null; }
+  const el = document.getElementById('bb-caption');
+  el.className = '';
+  el.innerHTML = '';
+}
 
 // ── ANNOUNCEMENT ──────────────────────────────────────────────────────────────
 let lastAnnStatus = null;
+
 function announce(status) {
   if (status === lastAnnStatus) return;
   lastAnnStatus = status;
+
+  stopBeep();
+  stopFlicker();
+  if (status !== 'danger' && evacuateShowing) stopEvacuateCaption();
   setCaption(getAnn(status));
-  if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
-  currentAudio = audioFiles[status];
-  if (currentAudio) {
-    currentAudio.currentTime = 0;
-    currentAudio.play().catch(() => {});
+  if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
+
+  const audio = audioFiles[status];
+
+  if (audio && audioUnlocked) {
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+    currentAudio = audio;
+
+    audio.onended = () => {
+      if (lastAnnStatus !== status) return;
+      if (status === 'warning') startWarningBeep();
+      if (status === 'danger')  { startDangerBeep(); showEvacuateCaption(); }
+    };
+  } else {
+    // No audio or not yet unlocked — start beeps immediately if unlocked
+    if (audioUnlocked) {
+      if (status === 'warning') startWarningBeep();
+      if (status === 'danger')  { startDangerBeep(); showEvacuateCaption(); }
+    }
   }
 }
+
 function setCaption(text) {
+  if (evacuateShowing) return;   // don't overwrite evacuate
   const el = document.getElementById('bb-caption');
+  el.className = '';
   el.style.opacity = 0;
   setTimeout(() => { el.textContent = text; el.style.opacity = 1; }, 400);
 }
 
-// ── DANGER FLICKER ────────────────────────────────────────────────────────────
-let flickerState = false;
-setInterval(() => {
-  const tile = document.getElementById('water-tile');
-  if (!tile.classList.contains('danger')) return;
-  flickerState = !flickerState;
-  tile.style.backgroundColor = flickerState ? '#ffffff' : '#fde8ec';
-}, 1000);
+// ── TILE FLICKER ──────────────────────────────────────────────────────────────
+let flickerInterval = null;
+let flickerState    = false;
+
+const FLICKER_COLOURS = {
+  warning: {
+    bg:   ['#fff8e6', '#f5a623'],
+    text: ['#7a4f00', '#111111'],
+  },
+  danger: {
+    bg:   ['#fde8ec', '#e5193a'],
+    text: ['#7a0010', '#ffffff'],
+  },
+};
+
+function stopFlicker() {
+  if (flickerInterval) { clearInterval(flickerInterval); flickerInterval = null; }
+  flickerState = false;
+  document.getElementById('water-status-badge').style.color = '';
+  document.getElementById('water-cm').style.color           = '';
+  document.getElementById('water-unit').style.color         = '';
+}
+
+function applyTileState(status) {
+  stopFlicker();
+  const tile  = document.getElementById('water-tile');
+  const badge = document.getElementById('water-status-badge');
+  const cm    = document.getElementById('water-cm');
+  const unit  = document.getElementById('water-unit');
+
+  tile.classList.remove('safe', 'warning', 'danger', 'warning-flicker', 'danger-flicker');
+  tile.style.transition      = status === 'safe' ? 'background-color 1.2s ease' : 'none';
+  tile.style.backgroundColor = '';
+  badge.style.color = '';
+  cm.style.color    = '';
+  unit.style.color  = '';
+  tile.classList.add(status);
+
+  if (status === 'warning' || status === 'danger') {
+    const { bg, text } = FLICKER_COLOURS[status];
+    const ms = status === 'warning' ? 900 : 500;
+
+    const applyFlicker = () => {
+      tile.style.backgroundColor = flickerState ? bg[1]   : bg[0];
+      badge.style.color          = flickerState ? text[1] : text[0];
+      cm.style.color             = flickerState ? text[1] : '#111';
+      unit.style.color           = flickerState ? text[1] : '#333';
+      flickerState = !flickerState;
+    };
+
+    applyFlicker();
+    flickerInterval = setInterval(applyFlicker, ms);
+  }
+}
 
 // ── RENDER ────────────────────────────────────────────────────────────────────
 function render(data) {
   const status = getStatus(currentLevel);
-  const tile   = document.getElementById('water-tile');
+  applyTileState(status);
 
-  tile.classList.remove('safe','warning','danger');
-  if (status !== 'danger') {
-    tile.style.backgroundColor = '';
-    tile.style.transition = 'background-color 1.2s ease';
-    flickerState = false;
-  }
-  tile.classList.add(status);
-
-  document.getElementById('water-cm').textContent          = currentLevel;
-  document.getElementById('water-unit').textContent        = t('unit');
+  document.getElementById('water-cm').textContent           = currentLevel;
+  document.getElementById('water-unit').textContent         = t('unit');
   document.getElementById('water-status-badge').textContent = t(status);
 
   document.getElementById('wl-label').textContent    = t('tileWL');
@@ -625,21 +849,16 @@ function render(data) {
   document.getElementById('bb-lang').textContent     = langEN ? 'EN' : 'TH';
 
   if (data) {
-    // WiFi bars
     updateWifi(data.ping_ms);
-    // DB link
     updateLink(data.db_ok);
-    // Last update from API timestamp
     if (data.timestamp) {
       const d = new Date(data.timestamp);
       const pad = n => String(n).padStart(2,'0');
       document.getElementById('upd-val').textContent =
         `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
     }
-    // Sensor dot: green unless no data arriving
     document.getElementById('sensor-dot').className = 'dot online';
   } else {
-    // No API response
     updateWifi(null);
     updateLink(false);
     document.getElementById('sensor-dot').className = 'dot offline';
@@ -674,8 +893,8 @@ function renderTrend() {
 
 // ── LIVE API POLLING ──────────────────────────────────────────────────────────
 let lastTimestamp    = null;
-let lastDataReceived = null;   // Date of last successful API response
-let lastRenderData   = null;   // cache last good data for language re-renders
+let lastDataReceived = null;
+let lastRenderData   = null;
 
 async function pollStatus() {
   try {
@@ -685,7 +904,6 @@ async function pollStatus() {
     lastDataReceived = Date.now();
     lastRenderData   = data;
 
-    // Only update level if timestamp changed (new reading)
     if (data.timestamp !== lastTimestamp) {
       lastTimestamp = data.timestamp;
       currentLevel  = data.level_cm;
@@ -703,14 +921,12 @@ async function pollStatus() {
 
     render(data);
   } catch {
-    // API unreachable — show offline state, keep last level
     lastRenderData = null;
     render(null);
   }
 }
 
 // ── SENSOR OFFLINE WATCHDOG ───────────────────────────────────────────────────
-// If no new API response in 10 s, force sensor dot offline
 setInterval(() => {
   const stale = !lastDataReceived || (Date.now() - lastDataReceived) > 10000;
   if (stale) {
@@ -725,8 +941,9 @@ setInterval(() => {
 // ── LANGUAGE TOGGLE ───────────────────────────────────────────────────────────
 setInterval(() => {
   langEN = !langEN;
-  render(lastRenderData);   // re-render with cached real data, not null
-  setCaption(getAnn(getStatus(currentLevel)));
+  render(lastRenderData);
+  // Don't overwrite evacuate caption with lang toggle
+  if (!evacuateShowing) setCaption(getAnn(getStatus(currentLevel)));
 }, 10000);
 
 // ── BOOT ──────────────────────────────────────────────────────────────────────
