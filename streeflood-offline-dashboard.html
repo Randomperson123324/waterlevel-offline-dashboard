@@ -1,957 +1,1236 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StreeFlood Monitor</title>
-<style>
-  @font-face { font-family: 'IBMPlexSansThai'; src: url('IBMPlexSansThai-Thin.ttf');      font-weight: 100; }
-  @font-face { font-family: 'IBMPlexSansThai'; src: url('IBMPlexSansThai-ExtraLight.ttf'); font-weight: 200; }
-  @font-face { font-family: 'IBMPlexSansThai'; src: url('IBMPlexSansThai-Light.ttf');      font-weight: 300; }
-  @font-face { font-family: 'IBMPlexSansThai'; src: url('IBMPlexSansThai-Regular.ttf');    font-weight: 400; }
-  @font-face { font-family: 'IBMPlexSansThai'; src: url('IBMPlexSansThai-Medium.ttf');     font-weight: 500; }
-  @font-face { font-family: 'IBMPlexSansThai'; src: url('IBMPlexSansThai-SemiBold.ttf');   font-weight: 600; }
-  @font-face { font-family: 'IBMPlexSansThai'; src: url('IBMPlexSansThai-Bold.ttf');       font-weight: 700; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StreeFlood Monitor</title>
+  <style>
+    @font-face {
+      font-family: 'IBMPlexSansThai';
+      src: url('IBMPlexSansThai-Thin.ttf');
+      font-weight: 100;
+    }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+    @font-face {
+      font-family: 'IBMPlexSansThai';
+      src: url('IBMPlexSansThai-ExtraLight.ttf');
+      font-weight: 200;
+    }
 
-  :root {
-    --safe:    #00F037;
-    --warning: #EEF200;
-    --danger:  #F20000;
-    --bg:      #f0f2f5;
-    --topbar:  #111111;
-    --tile:    #ffffff;
-    --border:  #d0d4da;
-    --label:   #6b7280;
-    --mono:    'IBMPlexSansThai', sans-serif;
-    --body:    'IBMPlexSansThai', sans-serif;
-  }
+    @font-face {
+      font-family: 'IBMPlexSansThai';
+      src: url('IBMPlexSansThai-Light.ttf');
+      font-weight: 300;
+    }
 
-  body {
-    font-family: var(--body);
-    background: var(--bg);
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+    @font-face {
+      font-family: 'IBMPlexSansThai';
+      src: url('IBMPlexSansThai-Regular.ttf');
+      font-weight: 400;
+    }
 
-  /* ── TOP BAR ── */
-  #topbar {
-    background: var(--topbar);
-    color: #fff;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 28px;
-    height: 56px;
-    flex-shrink: 0;
-    border-bottom: 2px solid #2a2a2a;
-  }
-  #topbar-left {
-    font-family: var(--mono);
-    font-size: 13px;
-    font-weight: 400;
-    letter-spacing: 0.03em;
-    color: #e0e0e0;
-  }
-  #topbar-left span {
-    color: #888;
-    margin-right: 10px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-  }
-  #clock {
-    font-family: var(--mono);
-    font-size: 18px;
-    font-weight: 300;
-    letter-spacing: 0.06em;
-    color: #ffffff;
-    text-align: right;
-  }
-  #clock-date {
-    font-size: 11px;
-    font-weight: 400;
-    color: #888;
-    letter-spacing: 0.08em;
-    text-align: right;
-    margin-top: 2px;
-  }
+    @font-face {
+      font-family: 'IBMPlexSansThai';
+      src: url('IBMPlexSansThai-Medium.ttf');
+      font-weight: 500;
+    }
 
-  /* ── MAIN ── */
-  #main {
-    flex: 1;
-    display: grid;
-    grid-template-columns: 70% 30%;
-    gap: 0;
-    padding: 0;
-    min-height: 0;
-  }
+    @font-face {
+      font-family: 'IBMPlexSansThai';
+      src: url('IBMPlexSansThai-SemiBold.ttf');
+      font-weight: 600;
+    }
 
-  /* ── TILE BASE ── */
-  .tile {
-    background: var(--tile);
-    border: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    border-radius: 0;
-  }
-  /* collapse double borders */
-  #water-tile { border-right: none; border-bottom: none; border-top: none; }
-  #sys-tile   { border-bottom: none; border-top: none; }
-  #trend-tile { border-top: none; }
+    @font-face {
+      font-family: 'IBMPlexSansThai';
+      src: url('IBMPlexSansThai-Bold.ttf');
+      font-weight: 700;
+    }
 
-  .tile-label {
-    font-family: var(--mono);
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 0.10em;
-    color: #111;
-    text-transform: uppercase;
-    padding: 14px 20px 12px;
-    border-bottom: 1px solid var(--border);
-  }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-  /* ── WATER LEVEL TILE ── */
-  #water-tile {
-    position: relative;
-    overflow: hidden;
-    transition: background-color 1.2s ease;
-  }
-  #water-tile.safe    { background-color: #e8fbef; }
-  #water-tile.warning { background-color: #fff8e6; }
-  #water-tile.danger  { background-color: #fde8ec; }
+    :root {
+      --safe: #00F037;
+      --warning: #EEF200;
+      --danger: #F20000;
+      --bg: #f0f2f5;
+      --topbar: #111111;
+      --tile: #ffffff;
+      --border: #d0d4da;
+      --label: #6b7280;
+      --mono: 'IBMPlexSansThai', sans-serif;
+      --body: 'IBMPlexSansThai', sans-serif;
+    }
 
-  #water-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0;
-  }
-  #water-cm {
-    font-family: var(--mono);
-    font-size: 160px;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: -2px;
-    color: #111;
-  }
-  #water-unit {
-    font-family: var(--mono);
-    font-size: 18px;
-    font-weight: 400;
-    color: #333;
-    letter-spacing: 0.18em;
-    margin-top: 4px;
-  }
-  #water-status-badge {
-    font-family: var(--mono);
-    font-size: 64px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-top: 16px;
-    color: #111;
-  }
-  .safe    #water-status-badge { color: #1db954; }
-  .warning #water-status-badge { color: #7a4f00; }
-  .danger  #water-status-badge { color: #7a0010; }
+    body {
+      font-family: var(--body);
+      background: var(--bg);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
 
-  /* ── RIGHT COLUMN ── */
-  #right-col {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
+    /* ── TOP BAR ── */
+    #topbar {
+      background: var(--topbar);
+      color: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 28px;
+      height: 56px;
+      flex-shrink: 0;
+      border-bottom: 2px solid #2a2a2a;
+    }
 
-  /* ── SYSTEM STATUS TILE ── */
-  #sys-tile { flex: 0 0 auto; }
-  #sys-body {
-    padding: 16px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
+    #topbar-left {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.03em;
+      color: #e0e0e0;
+    }
 
-  /* WiFi visual */
-  #wifi-block {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px 0 16px;
-    gap: 6px;
-    border-bottom: 1px solid var(--border);
-  }
-  .wifi-svg { width: 80px; height: 56px; }
-  .wifi-arc { fill: none; stroke-width: 6; stroke-linecap: round; transition: stroke 0.6s ease; }
-  .wifi-arc.on  { stroke: #1db954; }
-  .wifi-arc.warn { stroke: #f5a623; }
-  .wifi-arc.off { stroke: #e0e0e0; }
-  .wifi-dot { transition: fill 0.6s ease; }
-  .wifi-dot.on  { fill: #1db954; }
-  .wifi-dot.warn { fill: #f5a623; }
-  .wifi-dot.off { fill: #e0e0e0; }
-  #wifi-ping {
-    font-family: var(--mono);
-    font-size: 18px;
-    font-weight: 600;
-    color: #111;
-    letter-spacing: 0.02em;
-  }
-  #wifi-label {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    color: var(--label);
-    text-transform: uppercase;
-  }
+    #topbar-left span {
+      color: #888;
+      margin-right: 10px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+    }
 
-  /* Pi ↔ DB link diagram */
-  #link-block {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 18px 12px;
-    gap: 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .link-node {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-    flex-shrink: 0;
-  }
-  .link-icon {
-    width: 40px; height: 40px;
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px;
-    background: #f4f5f7;
-    border: 1px solid var(--border);
-  }
-  .link-node-label {
-    font-size: 9px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    color: var(--label);
-    text-transform: uppercase;
-  }
-  .link-line-wrap {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    height: 40px;
-  }
-  .link-line {
-    height: 3px;
-    width: 100%;
-    border-radius: 2px;
-    transition: background 0.6s ease;
-  }
-  .link-line.ok   { background: #1db954; }
-  .link-line.fail { background: repeating-linear-gradient(90deg,#e5193a 0,#e5193a 6px,transparent 6px,transparent 12px); }
-  .link-status-icon {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%,-50%);
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px;
-    transition: background 0.6s ease;
-    border: 2px solid #fff;
-  }
-  .link-status-icon.ok   { background: #1db954; }
-  .link-status-icon.fail { background: #e5193a; }
+    #clock {
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 300;
+      letter-spacing: 0.06em;
+      color: #ffffff;
+      text-align: right;
+    }
 
-  /* Sys rows (sensor + last update) */
-  .sys-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .sys-row:last-child { border-bottom: none; }
-  .sys-key {
-    font-family: var(--mono);
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    color: var(--label);
-    text-transform: uppercase;
-  }
-  .sys-val {
-    font-family: var(--mono);
-    font-size: 12px;
-    font-weight: 400;
-    letter-spacing: 0.03em;
-    color: #111;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; }
-  .dot.online  { background: #1db954; }
-  .dot.offline { background: #e5193a; }
+    #clock-date {
+      font-size: 11px;
+      font-weight: 400;
+      color: #888;
+      letter-spacing: 0.08em;
+      text-align: right;
+      margin-top: 2px;
+    }
 
-  /* ── TREND TILE ── */
-  #trend-tile { flex: 1; min-height: 0; }
-  #trend-body { padding: 16px 20px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
-  .trend-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: var(--mono);
-    font-size: 11px;
-    font-weight: 400;
-    color: #666;
-  }
-  .trend-time { width: 52px; color: #aaa; letter-spacing: 0.03em; }
-  .trend-bar-wrap { flex: 1; background: #f0f2f5; height: 14px; border-radius: 1px; overflow: hidden; }
-  .trend-bar { height: 100%; border-radius: 1px; transition: width 0.6s ease; }
-  .trend-val { width: 36px; text-align: right; }
+    /* ── MAIN ── */
+    #main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 70% 30%;
+      gap: 0;
+      padding: 0;
+      min-height: 0;
+    }
 
-  /* ── BOTTOM BAR ── */
-  #bottombar {
-    background: #111111;
-    color: #fff;
-    height: 72px;
-    display: flex;
-    align-items: center;
-    padding: 0 28px;
-    gap: 20px;
-    flex-shrink: 0;
-    border-top: 2px solid #222;
-  }
-  #bb-label {
-    font-family: var(--mono);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.18em;
-    color: #555;
-    text-transform: uppercase;
-    flex-shrink: 0;
-  }
-  #bb-sep { width: 1px; height: 32px; background: #333; flex-shrink: 0; }
-  #bb-caption {
-    font-family: var(--body);
-    font-size: 20px;
-    font-weight: 400;
-    letter-spacing: 0.01em;
-    color: #e0e0e0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    flex: 1;
-    transition: opacity 0.4s ease;
-  }
-  #bb-lang {
-    font-family: var(--mono);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    color: #555;
-    flex-shrink: 0;
-  }
-  /* ── UNLOCK OVERLAY ── */
-  #unlock-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.75);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    cursor: pointer;
-    gap: 16px;
-  }
-  #unlock-overlay-box {
-    background: #111;
-    border: 1px solid #333;
-    padding: 32px 48px;
-    text-align: center;
-    border-radius: 2px;
-  }
-  #unlock-overlay-box .u-title {
-    font-family: 'IBMPlexSansThai', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.2em;
-    color: #555;
-    text-transform: uppercase;
-    margin-bottom: 12px;
-  }
-  #unlock-overlay-box .u-main {
-    font-family: 'IBMPlexSansThai', sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: 0.04em;
-  }
-  #unlock-overlay-box .u-sub {
-    font-family: 'IBMPlexSansThai', sans-serif;
-    font-size: 12px;
-    color: #666;
-    margin-top: 8px;
-    letter-spacing: 0.05em;
-  }
+    /* ── TILE BASE ── */
+    .tile {
+      background: var(--tile);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      border-radius: 0;
+    }
+
+    /* collapse double borders */
+    #water-tile {
+      border-right: none;
+      border-bottom: none;
+      border-top: none;
+    }
+
+    #sys-tile {
+      border-bottom: none;
+      border-top: none;
+    }
+
+    #trend-tile {
+      border-top: none;
+    }
+
+    .tile-label {
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.10em;
+      color: #111;
+      text-transform: uppercase;
+      padding: 14px 20px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── WATER LEVEL TILE ── */
+    #water-tile {
+      position: relative;
+      overflow: hidden;
+      transition: background-color 1.2s ease;
+    }
+
+    #water-tile.safe {
+      background-color: #e8fbef;
+    }
+
+    #water-tile.warning {
+      background-color: #fff8e6;
+    }
+
+    #water-tile.danger {
+      background-color: #fde8ec;
+    }
+
+    #water-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+    }
+
+    #water-cm {
+      font-family: var(--mono);
+      font-size: 160px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -2px;
+      color: #111;
+    }
+
+    #water-unit {
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 400;
+      color: #333;
+      letter-spacing: 0.18em;
+      margin-top: 4px;
+    }
+
+    #water-status-badge {
+      font-family: var(--mono);
+      font-size: 64px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-top: 16px;
+      color: #111;
+    }
+
+    .safe #water-status-badge {
+      color: #1db954;
+    }
+
+    .warning #water-status-badge {
+      color: #7a4f00;
+    }
+
+    .danger #water-status-badge {
+      color: #7a0010;
+    }
+
+    /* ── RIGHT COLUMN ── */
+    #right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* ── SYSTEM STATUS TILE ── */
+    #sys-tile {
+      flex: 0 0 auto;
+    }
+
+    #sys-body {
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* WiFi visual */
+    #wifi-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 0 16px;
+      gap: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .wifi-svg {
+      width: 80px;
+      height: 56px;
+    }
+
+    .wifi-arc {
+      fill: none;
+      stroke-width: 6;
+      stroke-linecap: round;
+      transition: stroke 0.6s ease;
+    }
+
+    .wifi-arc.on {
+      stroke: #1db954;
+    }
+
+    .wifi-arc.warn {
+      stroke: #f5a623;
+    }
+
+    .wifi-arc.off {
+      stroke: #e0e0e0;
+    }
+
+    .wifi-dot {
+      transition: fill 0.6s ease;
+    }
+
+    .wifi-dot.on {
+      fill: #1db954;
+    }
+
+    .wifi-dot.warn {
+      fill: #f5a623;
+    }
+
+    .wifi-dot.off {
+      fill: #e0e0e0;
+    }
+
+    #wifi-ping {
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 600;
+      color: #111;
+      letter-spacing: 0.02em;
+    }
+
+    #wifi-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      color: var(--label);
+      text-transform: uppercase;
+    }
+
+    /* Pi ↔ DB link diagram */
+    #link-block {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px 12px;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .link-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .link-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      background: #f4f5f7;
+      border: 1px solid var(--border);
+    }
+
+    .link-node-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--label);
+      text-transform: uppercase;
+    }
+
+    .link-line-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      height: 40px;
+    }
+
+    .link-line {
+      height: 3px;
+      width: 100%;
+      border-radius: 2px;
+      transition: background 0.6s ease;
+    }
+
+    .link-line.ok {
+      background: #1db954;
+    }
+
+    .link-line.fail {
+      background: repeating-linear-gradient(90deg, #e5193a 0, #e5193a 6px, transparent 6px, transparent 12px);
+    }
+
+    .link-status-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      transition: background 0.6s ease;
+      border: 2px solid #fff;
+    }
+
+    .link-status-icon.ok {
+      background: #1db954;
+    }
+
+    .link-status-icon.fail {
+      background: #e5193a;
+    }
+
+    /* Sys rows (sensor + last update) */
+    .sys-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sys-row:last-child {
+      border-bottom: none;
+    }
+
+    .sys-key {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: var(--label);
+      text-transform: uppercase;
+    }
+
+    .sys-val {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.03em;
+      color: #111;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ccc;
+    }
+
+    .dot.online {
+      background: #1db954;
+    }
+
+    .dot.offline {
+      background: #e5193a;
+    }
+
+    /* ── TREND TILE ── */
+    #trend-tile {
+      flex: 1;
+      min-height: 0;
+    }
+
+    #trend-body {
+      padding: 16px 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .trend-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 400;
+      color: #666;
+    }
+
+    .trend-time {
+      width: 52px;
+      color: #aaa;
+      letter-spacing: 0.03em;
+    }
+
+    .trend-bar-wrap {
+      flex: 1;
+      background: #f0f2f5;
+      height: 14px;
+      border-radius: 1px;
+      overflow: hidden;
+    }
+
+    .trend-bar {
+      height: 100%;
+      border-radius: 1px;
+      transition: width 0.6s ease;
+    }
+
+    .trend-val {
+      width: 36px;
+      text-align: right;
+    }
+
+    /* ── BOTTOM BAR ── */
+    #bottombar {
+      background: #111111;
+      color: #fff;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      gap: 20px;
+      flex-shrink: 0;
+      border-top: 2px solid #222;
+    }
+
+    #bb-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      color: #555;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    #bb-sep {
+      width: 1px;
+      height: 32px;
+      background: #333;
+      flex-shrink: 0;
+    }
+
+    #bb-caption {
+      font-family: var(--body);
+      font-size: 20px;
+      font-weight: 400;
+      letter-spacing: 0.01em;
+      color: #e0e0e0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      transition: opacity 0.4s ease;
+    }
+
+    #bb-lang {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: #555;
+      flex-shrink: 0;
+    }
+
+    /* ── UNLOCK OVERLAY ── */
+    #unlock-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      cursor: pointer;
+      gap: 16px;
+    }
+
+    #unlock-overlay-box {
+      background: #111;
+      border: 1px solid #333;
+      padding: 32px 48px;
+      text-align: center;
+      border-radius: 2px;
+    }
+
+    #unlock-overlay-box .u-title {
+      font-family: 'IBMPlexSansThai', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      color: #555;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    #unlock-overlay-box .u-main {
+      font-family: 'IBMPlexSansThai', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.04em;
+    }
+
+    #unlock-overlay-box .u-sub {
+      font-family: 'IBMPlexSansThai', sans-serif;
+      font-size: 12px;
+      color: #666;
+      margin-top: 8px;
+      letter-spacing: 0.05em;
+    }
 
 
-  /* ── EVACUATE CAPTION ── */
-  #bb-caption.evacuate-mode {
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: #ff4444;
-    overflow: visible;
-    display: flex;
-    gap: 10px;
-    white-space: nowrap;
-    text-overflow: clip;
-    justify-content: center;
-    width: 100%;
-  }
-  @keyframes letterSlideUp {
-    from { transform: translateY(30px); opacity: 0; }
-    to   { transform: translateY(0);    opacity: 1; }
-  }
-  .evac-letter {
-    display: inline-block;
-    animation: letterSlideUp 0.35s ease forwards;
-    opacity: 0;
-  }
+    /* ── EVACUATE CAPTION ── */
+    #bb-caption.evacuate-mode {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #ff4444;
+      overflow: visible;
+      display: flex;
+      gap: 10px;
+      white-space: nowrap;
+      text-overflow: clip;
+      justify-content: center;
+      width: 100%;
+    }
 
-</style>
+    @keyframes letterSlideUp {
+      from {
+        transform: translateY(30px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .evac-letter {
+      display: inline-block;
+      animation: letterSlideUp 0.35s ease forwards;
+      opacity: 0;
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- TOP BAR -->
-<div id="topbar">
-  <div>
-    <div id="topbar-left">
-      <span>SYS</span>StreeFlood Offline Water Level Monitoring System
-    </div>
-  </div>
-  <div style="display:flex;align-items:center;">
+  <!-- TOP BAR -->
+  <div id="topbar">
     <div>
-      <div id="clock">00:00:00</div>
-      <div id="clock-date">— — —</div>
+      <div id="topbar-left">
+        <span>SYS</span>StreeFlood Offline Water Level Monitoring System
+      </div>
     </div>
-  </div>
-</div>
-
-<!-- MAIN -->
-<div id="main">
-
-  <!-- LEFT: Water Level -->
-  <div class="tile" id="water-tile">
-    <div class="tile-label" id="wl-label">Water Level</div>
-    <div id="water-body">
-      <div id="water-cm">0</div>
-      <div id="water-unit">CENTIMETRES</div>
-      <div id="water-status-badge">SAFE</div>
+    <div style="display:flex;align-items:center;">
+      <div>
+        <div id="clock">00:00:00</div>
+        <div id="clock-date">— — —</div>
+      </div>
     </div>
   </div>
 
-  <!-- RIGHT COLUMN -->
-  <div id="right-col">
+  <!-- MAIN -->
+  <div id="main">
 
-    <!-- System Status -->
-    <div class="tile" id="sys-tile">
-      <div class="tile-label" id="ss-label">System Status</div>
-      <div id="sys-body">
-
-        <!-- WiFi signal -->
-        <div id="wifi-block">
-          <svg class="wifi-svg" viewBox="0 0 80 56" xmlns="http://www.w3.org/2000/svg">
-            <!-- arc 3 (outermost) -->
-            <path id="wifi-arc3" class="wifi-arc off" d="M8,34 Q40,2 72,34"/>
-            <!-- arc 2 -->
-            <path id="wifi-arc2" class="wifi-arc off" d="M18,42 Q40,18 62,42"/>
-            <!-- arc 1 (innermost) -->
-            <path id="wifi-arc1" class="wifi-arc off" d="M28,50 Q40,36 52,50"/>
-            <!-- dot -->
-            <circle id="wifi-dot" class="wifi-dot off" cx="40" cy="54" r="4"/>
-          </svg>
-          <div id="wifi-ping">— ms</div>
-          <div id="wifi-label">Network</div>
-        </div>
-
-        <!-- Pi ↔ DB link -->
-        <div id="link-block">
-          <div class="link-node">
-            <div class="link-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v2"/><path d="M12 2v2"/><path d="M17 20v2"/><path d="M17 2v2"/><path d="M2 12h2"/><path d="M2 17h2"/><path d="M2 7h2"/><path d="M20 12h2"/><path d="M20 17h2"/><path d="M20 7h2"/><path d="M7 20v2"/><path d="M7 2v2"/><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg></div>
-            <div class="link-node-label">Pi</div>
-          </div>
-          <div class="link-line-wrap">
-            <div class="link-line fail" id="link-line"></div>
-            <div class="link-status-icon fail" id="link-icon">✕</div>
-          </div>
-          <div class="link-node">
-            <div class="link-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg></div>
-            <div class="link-node-label">DB</div>
-          </div>
-        </div>
-
-        <!-- Sensor + Last update rows -->
-        <div class="sys-row">
-          <span class="sys-key" id="sensor-key">Sensor</span>
-          <span class="sys-val"><span class="dot online" id="sensor-dot"></span><span id="sensor-val">Active</span></span>
-        </div>
-        <div class="sys-row">
-          <span class="sys-key" id="upd-key">Last Update</span>
-          <span class="sys-val" id="upd-val">—</span>
-        </div>
-
+    <!-- LEFT: Water Level -->
+    <div class="tile" id="water-tile">
+      <div class="tile-label" id="wl-label">Water Level</div>
+      <div id="water-body">
+        <div id="water-cm">0</div>
+        <div id="water-unit">CENTIMETRES</div>
+        <div id="water-status-badge">SAFE</div>
       </div>
     </div>
 
-    <!-- Trend -->
-    <div class="tile" id="trend-tile">
-      <div class="tile-label" id="trend-label">Recent Readings</div>
-      <div id="trend-body" id="trend-rows"></div>
+    <!-- RIGHT COLUMN -->
+    <div id="right-col">
+
+      <!-- System Status -->
+      <div class="tile" id="sys-tile">
+        <div class="tile-label" id="ss-label">System Status</div>
+        <div id="sys-body">
+
+          <!-- WiFi signal -->
+          <div id="wifi-block">
+            <svg class="wifi-svg" viewBox="0 0 80 56" xmlns="http://www.w3.org/2000/svg">
+              <!-- arc 3 (outermost) -->
+              <path id="wifi-arc3" class="wifi-arc off" d="M8,34 Q40,2 72,34" />
+              <!-- arc 2 -->
+              <path id="wifi-arc2" class="wifi-arc off" d="M18,42 Q40,18 62,42" />
+              <!-- arc 1 (innermost) -->
+              <path id="wifi-arc1" class="wifi-arc off" d="M28,50 Q40,36 52,50" />
+              <!-- dot -->
+              <circle id="wifi-dot" class="wifi-dot off" cx="40" cy="54" r="4" />
+            </svg>
+            <div id="wifi-ping">— ms</div>
+            <div id="wifi-label">Network</div>
+          </div>
+
+          <!-- Pi ↔ DB link -->
+          <div id="link-block">
+            <div class="link-node">
+              <div class="link-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+                  fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 20v2" />
+                  <path d="M12 2v2" />
+                  <path d="M17 20v2" />
+                  <path d="M17 2v2" />
+                  <path d="M2 12h2" />
+                  <path d="M2 17h2" />
+                  <path d="M2 7h2" />
+                  <path d="M20 12h2" />
+                  <path d="M20 17h2" />
+                  <path d="M20 7h2" />
+                  <path d="M7 20v2" />
+                  <path d="M7 2v2" />
+                  <rect x="4" y="4" width="16" height="16" rx="2" />
+                  <rect x="8" y="8" width="8" height="8" rx="1" />
+                </svg></div>
+              <div class="link-node-label">Pi</div>
+            </div>
+            <div class="link-line-wrap">
+              <div class="link-line fail" id="link-line"></div>
+              <div class="link-status-icon fail" id="link-icon">✕</div>
+            </div>
+            <div class="link-node">
+              <div class="link-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+                  fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <ellipse cx="12" cy="5" rx="9" ry="3" />
+                  <path d="M3 5V19A9 3 0 0 0 21 19V5" />
+                  <path d="M3 12A9 3 0 0 0 21 12" />
+                </svg></div>
+              <div class="link-node-label">DB</div>
+            </div>
+          </div>
+
+          <!-- Sensor + Last update rows -->
+          <div class="sys-row">
+            <span class="sys-key" id="sensor-key">Sensor</span>
+            <span class="sys-val"><span class="dot online" id="sensor-dot"></span><span
+                id="sensor-val">Active</span></span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key" id="upd-key">Last Update</span>
+            <span class="sys-val" id="upd-val">—</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Trend -->
+      <div class="tile" id="trend-tile">
+        <div class="tile-label" id="trend-label">Recent Readings</div>
+        <div id="trend-body" id="trend-rows"></div>
+      </div>
+
     </div>
-
   </div>
-</div>
 
-<!-- AUDIO UNLOCK OVERLAY -->
-<div id="unlock-overlay" onclick="unlockAudio()">
-  <div id="unlock-overlay-box">
-    <div class="u-title">StreetFlood Monitor</div>
-    <div class="u-main">Click anywhere to start</div>
-    <div class="u-sub">คลิกที่ใดก็ได้เพื่อเริ่ม</div>
+  <!-- AUDIO UNLOCK OVERLAY -->
+  <div id="unlock-overlay" onclick="unlockAudio()">
+    <div id="unlock-overlay-box">
+      <div class="u-title">StreetFlood Monitor</div>
+      <div class="u-main">Click anywhere to start</div>
+      <div class="u-sub">คลิกที่ใดก็ได้เพื่อเริ่ม</div>
+    </div>
   </div>
-</div>
 
-<!-- BOTTOM BAR -->
-<div id="bottombar">
-  <span id="bb-label">ANN</span>
-  <div id="bb-sep"></div>
-  <span id="bb-caption">System ready — monitoring active.</span>
-  <span id="bb-lang">EN</span>
-</div>
+  <!-- BOTTOM BAR -->
+  <div id="bottombar">
+    <span id="bb-label">ANN</span>
+    <div id="bb-sep"></div>
+    <span id="bb-caption">System ready — monitoring active.</span>
+    <span id="bb-lang">EN</span>
+  </div>
 
 
-<script>
-// ── CONFIG ──────────────────────────────────────────────────────────────────
-const SAFE_MAX    = 4;
-const WARNING_MAX = 10;
-const API_BASE    = 'http://localhost:5000';
-const POLL_MS     = 3000;
+  <script>
+    // ── CONFIG ──────────────────────────────────────────────────────────────────
+    const SAFE_MAX = 4;
+    const WARNING_MAX = 10;
+    const API_BASE = 'http://localhost:5000';
+    const POLL_MS = 3000;
 
-// ── STATE ────────────────────────────────────────────────────────────────────
-let currentLevel  = 0;
-let langEN        = true;
-const history     = [];
+    // ── STATE ────────────────────────────────────────────────────────────────────
+    let currentLevel = 0;
+    let langEN = true;
+    const history = [];
 
-// ── TRANSLATIONS ─────────────────────────────────────────────────────────────
-const T = {
-  tileWL:    ['Water Level',    'ระดับน้ำ'],
-  tileSS:    ['System Status',  'สถานะระบบ'],
-  tileTrend: ['Recent Readings','ข้อมูลล่าสุด'],
-  unit:      ['CENTIMETRES',    'เซนติเมตร'],
-  safe:      ['SAFE',           'ปลอดภัย'],
-  warning:   ['WARNING',        'เตือนภัย'],
-  danger:    ['DANGER',         'อันตราย'],
-  sensor:    ['Sensor',         'เซนเซอร์'],
-  upd:       ['Last Update',    'อัปเดตล่าสุด'],
-  sensorOn:  ['Active',         'ทำงานอยู่'],
-  bbLabel:   ['ANN',            'ประกาศ'],
-  annSafe:   ['Water level is normal. No immediate action required.',
-              'ระดับน้ำปกติ ไม่จำเป็นต้องดำเนินการใดๆ'],
-  annWarn:   ['Warning water level is high. please check and observe water level regulary',
-              'คำเตือน ระดับน้ำอยู่ในระดับเฝ้าระวัง โปรดสังเกตระดับน้ำเป็นระยะ'],
-  annDanger: ['Waring water level is danger please evacuate from high risk area immediately',
-              'คำเตือน ระดับน้ำอันตราย อพยพออกจากพื้นที่เสียงโดยด่วน'],
-};
-function t(key) { return T[key][langEN ? 0 : 1]; }
-
-// ── CLOCK ─────────────────────────────────────────────────────────────────────
-function updateClock() {
-  const now = new Date();
-  const pad = n => String(n).padStart(2,'0');
-  document.getElementById('clock').textContent =
-    `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-  const days   = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
-  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-  document.getElementById('clock-date').textContent =
-    `${days[now.getDay()]} ${pad(now.getDate())} ${months[now.getMonth()]} ${now.getFullYear()}`;
-}
-
-// ── HELPERS ───────────────────────────────────────────────────────────────────
-function getStatus(cm) {
-  if (cm <= SAFE_MAX)    return 'safe';
-  if (cm <= WARNING_MAX) return 'warning';
-  return 'danger';
-}
-function getAnn(s) { return t(s === 'safe' ? 'annSafe' : s === 'warning' ? 'annWarn' : 'annDanger'); }
-function barColor(s) { return {safe:'#1db954',warning:'#f5a623',danger:'#e5193a'}[s]; }
-
-// ── WIFI VISUAL ───────────────────────────────────────────────────────────────
-function updateWifi(pingMs) {
-  const hasSignal = pingMs !== null && pingMs !== undefined;
-  let bars = 0, cls = 'off';
-  if (hasSignal) {
-    cls  = pingMs < 200 ? 'on' : 'warn';
-    bars = pingMs < 80 ? 3 : pingMs < 200 ? 2 : 1;
-  }
-  const arcCls = (active) => 'wifi-arc ' + (active ? cls : 'off');
-  document.getElementById('wifi-arc1').setAttribute('class', arcCls(bars >= 1));
-  document.getElementById('wifi-arc2').setAttribute('class', arcCls(bars >= 2));
-  document.getElementById('wifi-arc3').setAttribute('class', arcCls(bars >= 3));
-  document.getElementById('wifi-dot').setAttribute('class', 'wifi-dot ' + (hasSignal ? cls : 'off'));
-  document.getElementById('wifi-ping').textContent = hasSignal ? `${pingMs} ms` : '— ms';
-}
-
-// ── DB LINK VISUAL ────────────────────────────────────────────────────────────
-function updateLink(dbOk) {
-  const line = document.getElementById('link-line');
-  const icon = document.getElementById('link-icon');
-  line.className = 'link-line ' + (dbOk ? 'ok' : 'fail');
-  icon.className = 'link-status-icon ' + (dbOk ? 'ok' : 'fail');
-  icon.textContent = dbOk ? '✓' : '✕';
-}
-
-// ── AUDIO UNLOCK ─────────────────────────────────────────────────────────────
-// Browsers block audio until a user gesture. Show a click-to-start overlay.
-let audioUnlocked = false;
-let beepCtx       = null;
-
-function unlockAudio() {
-  if (audioUnlocked) return;
-  audioUnlocked = true;
-
-  // Create and immediately resume AudioContext
-  beepCtx = new (window.AudioContext || window.webkitAudioContext)();
-  beepCtx.resume();
-
-  // Pre-load announcement Audio objects now that we have a gesture
-  audioFiles.safe    = new Audio('safe.MP3');
-  audioFiles.warning = new Audio('warning.MP3');
-  audioFiles.danger  = new Audio('danger.MP3');
-
-  // Hide overlay
-  const overlay = document.getElementById('unlock-overlay');
-  if (overlay) overlay.style.display = 'none';
-
-  // Re-trigger announce in case status was already set before unlock
-  const s = getStatus(currentLevel);
-  if (s !== 'safe') {
-    lastAnnStatus = null;
-    announce(s);
-  }
-}
-
-// ── AUDIO ─────────────────────────────────────────────────────────────────────
-const audioFiles = { safe: null, warning: null, danger: null };
-let currentAudio  = null;
-let beepInterval  = null;
-
-function stopBeep() {
-  if (beepInterval) { clearInterval(beepInterval); beepInterval = null; }
-}
-
-function makeBeep(freq, startOffset, duration, vol) {
-  if (!beepCtx) return;
-  const osc  = beepCtx.createOscillator();
-  const gain = beepCtx.createGain();
-  osc.connect(gain);
-  gain.connect(beepCtx.destination);
-  osc.frequency.value = freq;
-  gain.gain.value = vol;
-  const t = beepCtx.currentTime + startOffset;
-  osc.start(t);
-  osc.stop(t + duration);
-}
-
-function startWarningBeep() {
-  stopBeep();
-  if (!beepCtx) return;
-  const playOne = () => makeBeep(660, 0, 0.15, 0.08);
-  playOne();
-  beepInterval = setInterval(playOne, 3000);
-}
-
-function startDangerBeep() {
-  stopBeep();
-  if (!beepCtx) return;
-  const playPattern = () => {
-    makeBeep(880, 0.00, 0.15, 0.35);
-    makeBeep(880, 0.22, 0.15, 0.35);
-    makeBeep(880, 0.44, 0.15, 0.35);
-  };
-  playPattern();
-  beepInterval = setInterval(playPattern, 1800);
-}
-
-// ── EVACUATE CAPTION ──────────────────────────────────────────────────────────
-let evacuateShowing = false;
-let evacuateLangEN  = true;
-let evacuateLangTimer = null;
-
-function showEvacuateCaption() {
-  evacuateShowing = true;
-  evacuateLangEN  = langEN;
-  renderEvacuate(evacuateLangEN);
-
-  evacuateLangTimer = setInterval(() => {
-    evacuateLangEN = !evacuateLangEN;
-    renderEvacuate(evacuateLangEN);
-  }, 4000);
-}
-
-function renderEvacuate(isEN) {
-  const el   = document.getElementById('bb-caption');
-  const word = isEN ? 'EVACUATE' : 'อพยพ';
-  el.className = 'evacuate-mode';
-  el.innerHTML = '';
-  [...word].forEach((ch, i) => {
-    const span = document.createElement('span');
-    span.className   = 'evac-letter';
-    span.textContent = ch === ' ' ? '\u00a0' : ch;
-    span.style.animationDelay = `${i * 0.07}s`;
-    el.appendChild(span);
-  });
-}
-
-function stopEvacuateCaption() {
-  evacuateShowing = false;
-  if (evacuateLangTimer) { clearInterval(evacuateLangTimer); evacuateLangTimer = null; }
-  const el = document.getElementById('bb-caption');
-  el.className = '';
-  el.innerHTML = '';
-}
-
-// ── ANNOUNCEMENT ──────────────────────────────────────────────────────────────
-let lastAnnStatus = null;
-
-function announce(status) {
-  if (status === lastAnnStatus) return;
-  lastAnnStatus = status;
-
-  stopBeep();
-  stopFlicker();
-  if (status !== 'danger' && evacuateShowing) stopEvacuateCaption();
-  setCaption(getAnn(status));
-  if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
-
-  const audio = audioFiles[status];
-
-  if (audio && audioUnlocked) {
-    audio.currentTime = 0;
-    audio.play().catch(() => {});
-    currentAudio = audio;
-
-    audio.onended = () => {
-      if (lastAnnStatus !== status) return;
-      if (status === 'warning') startWarningBeep();
-      if (status === 'danger')  { startDangerBeep(); showEvacuateCaption(); }
+    // ── TRANSLATIONS ─────────────────────────────────────────────────────────────
+    const T = {
+      tileWL: ['Water Level', 'ระดับน้ำ'],
+      tileSS: ['System Status', 'สถานะระบบ'],
+      tileTrend: ['Recent Readings', 'ข้อมูลล่าสุด'],
+      unit: ['CENTIMETRES', 'เซนติเมตร'],
+      safe: ['SAFE', 'ปลอดภัย'],
+      warning: ['WARNING', 'เตือนภัย'],
+      danger: ['DANGER', 'อันตราย'],
+      sensor: ['Sensor', 'เซนเซอร์'],
+      upd: ['Last Update', 'อัปเดตล่าสุด'],
+      sensorOn: ['Active', 'ทำงานอยู่'],
+      bbLabel: ['ANN', 'ประกาศ'],
+      annSafe: ['Water level is normal. No immediate action required.',
+        'ระดับน้ำปกติ ไม่จำเป็นต้องดำเนินการใดๆ'],
+      annWarn: ['Warning water level is high. please check and observe water level regulary',
+        'คำเตือน ระดับน้ำอยู่ในระดับเฝ้าระวัง โปรดสังเกตระดับน้ำเป็นระยะ'],
+      annDanger: ['Waring water level is danger please evacuate from high risk area immediately',
+        'คำเตือน ระดับน้ำอันตราย อพยพออกจากพื้นที่เสียงโดยด่วน'],
     };
-  } else {
-    // No audio or not yet unlocked — start beeps immediately if unlocked
-    if (audioUnlocked) {
-      if (status === 'warning') startWarningBeep();
-      if (status === 'danger')  { startDangerBeep(); showEvacuateCaption(); }
+    function t(key) { return T[key][langEN ? 0 : 1]; }
+
+    // ── CLOCK ─────────────────────────────────────────────────────────────────────
+    function updateClock() {
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      document.getElementById('clock').textContent =
+        `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+      const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+      document.getElementById('clock-date').textContent =
+        `${days[now.getDay()]} ${pad(now.getDate())} ${months[now.getMonth()]} ${now.getFullYear()}`;
     }
-  }
-}
 
-function setCaption(text) {
-  if (evacuateShowing) return;   // don't overwrite evacuate
-  const el = document.getElementById('bb-caption');
-  el.className = '';
-  el.style.opacity = 0;
-  setTimeout(() => { el.textContent = text; el.style.opacity = 1; }, 400);
-}
+    // ── HELPERS ───────────────────────────────────────────────────────────────────
+    function getStatus(cm) {
+      if (cm <= SAFE_MAX) return 'safe';
+      if (cm <= WARNING_MAX) return 'warning';
+      return 'danger';
+    }
+    function getAnn(s) { return t(s === 'safe' ? 'annSafe' : s === 'warning' ? 'annWarn' : 'annDanger'); }
+    function barColor(s) { return { safe: '#1db954', warning: '#f5a623', danger: '#e5193a' }[s]; }
 
-// ── TILE FLICKER ──────────────────────────────────────────────────────────────
-let flickerInterval = null;
-let flickerState    = false;
+    // ── WIFI VISUAL ───────────────────────────────────────────────────────────────
+    function updateWifi(pingMs) {
+      const hasSignal = pingMs !== null && pingMs !== undefined;
+      let bars = 0, cls = 'off';
+      if (hasSignal) {
+        cls = pingMs < 200 ? 'on' : 'warn';
+        bars = pingMs < 80 ? 3 : pingMs < 200 ? 2 : 1;
+      }
+      const arcCls = (active) => 'wifi-arc ' + (active ? cls : 'off');
+      document.getElementById('wifi-arc1').setAttribute('class', arcCls(bars >= 1));
+      document.getElementById('wifi-arc2').setAttribute('class', arcCls(bars >= 2));
+      document.getElementById('wifi-arc3').setAttribute('class', arcCls(bars >= 3));
+      document.getElementById('wifi-dot').setAttribute('class', 'wifi-dot ' + (hasSignal ? cls : 'off'));
+      document.getElementById('wifi-ping').textContent = hasSignal ? `${pingMs} ms` : '— ms';
+    }
 
-const FLICKER_COLOURS = {
-  warning: {
-    bg:   ['#fff8e6', '#f5a623'],
-    text: ['#7a4f00', '#111111'],
-  },
-  danger: {
-    bg:   ['#fde8ec', '#e5193a'],
-    text: ['#7a0010', '#ffffff'],
-  },
-};
+    // ── DB LINK VISUAL ────────────────────────────────────────────────────────────
+    function updateLink(dbOk) {
+      const line = document.getElementById('link-line');
+      const icon = document.getElementById('link-icon');
+      line.className = 'link-line ' + (dbOk ? 'ok' : 'fail');
+      icon.className = 'link-status-icon ' + (dbOk ? 'ok' : 'fail');
+      icon.textContent = dbOk ? '✓' : '✕';
+    }
 
-function stopFlicker() {
-  if (flickerInterval) { clearInterval(flickerInterval); flickerInterval = null; }
-  flickerState = false;
-  document.getElementById('water-status-badge').style.color = '';
-  document.getElementById('water-cm').style.color           = '';
-  document.getElementById('water-unit').style.color         = '';
-}
+    // ── AUDIO UNLOCK ─────────────────────────────────────────────────────────────
+    // Browsers block audio until a user gesture. Show a click-to-start overlay.
+    let audioUnlocked = false;
+    let beepCtx = null;
 
-function applyTileState(status) {
-  stopFlicker();
-  const tile  = document.getElementById('water-tile');
-  const badge = document.getElementById('water-status-badge');
-  const cm    = document.getElementById('water-cm');
-  const unit  = document.getElementById('water-unit');
+    function unlockAudio() {
+      if (audioUnlocked) return;
+      audioUnlocked = true;
 
-  tile.classList.remove('safe', 'warning', 'danger', 'warning-flicker', 'danger-flicker');
-  tile.style.transition      = status === 'safe' ? 'background-color 1.2s ease' : 'none';
-  tile.style.backgroundColor = '';
-  badge.style.color = '';
-  cm.style.color    = '';
-  unit.style.color  = '';
-  tile.classList.add(status);
+      // Create and immediately resume AudioContext
+      beepCtx = new (window.AudioContext || window.webkitAudioContext)();
+      beepCtx.resume();
 
-  if (status === 'warning' || status === 'danger') {
-    const { bg, text } = FLICKER_COLOURS[status];
-    const ms = status === 'warning' ? 900 : 500;
+      // Pre-load announcement Audio objects now that we have a gesture
+      audioFiles.safe = new Audio('safe.MP3');
+      audioFiles.warning = new Audio('warning.MP3');
+      audioFiles.danger = new Audio('danger.MP3');
 
-    const applyFlicker = () => {
-      tile.style.backgroundColor = flickerState ? bg[1]   : bg[0];
-      badge.style.color          = flickerState ? text[1] : text[0];
-      cm.style.color             = flickerState ? text[1] : '#111';
-      unit.style.color           = flickerState ? text[1] : '#333';
-      flickerState = !flickerState;
+      // Hide overlay
+      const overlay = document.getElementById('unlock-overlay');
+      if (overlay) overlay.style.display = 'none';
+
+      // Reset so render() will call applyTileState with current status
+      lastRenderedStatus = null;
+
+      // Re-trigger announce in case status was already set before unlock
+      const s = getStatus(currentLevel);
+      lastAnnStatus = null;
+      announce(s);
+    }
+
+    // ── AUDIO ─────────────────────────────────────────────────────────────────────
+    const audioFiles = { safe: null, warning: null, danger: null };
+    let currentAudio = null;
+    let beepInterval = null;
+
+    function stopBeep() {
+      if (beepInterval) { clearInterval(beepInterval); beepInterval = null; }
+    }
+
+    function makeBeep(freq, startOffset, duration, vol) {
+      if (!beepCtx) return;
+      const osc = beepCtx.createOscillator();
+      const gain = beepCtx.createGain();
+      osc.connect(gain);
+      gain.connect(beepCtx.destination);
+      osc.frequency.value = freq;
+      gain.gain.value = vol;
+      const t = beepCtx.currentTime + startOffset;
+      osc.start(t);
+      osc.stop(t + duration);
+    }
+
+    function startWarningBeep() {
+      // no-op — beep is now driven by the flicker loop directly
+    }
+
+    function startDangerBeep() {
+      // now handled by flicker loop, same as warning
+    }
+
+    function makeWarningBeep() {
+      if (!beepCtx || !audioUnlocked) return;
+      const osc = beepCtx.createOscillator();
+      const gain = beepCtx.createGain();
+      osc.connect(gain);
+      gain.connect(beepCtx.destination);
+      osc.type = 'triangle';
+      const now = beepCtx.currentTime;
+      osc.frequency.value = 500;
+      gain.gain.setValueAtTime(0.55, now);
+      gain.gain.linearRampToValueAtTime(0, now + 0.7);
+      osc.start(now);
+      osc.stop(now + 0.7);
+    }
+
+    function makeDangerBeep() {
+      if (!beepCtx || !audioUnlocked) return;
+      const osc = beepCtx.createOscillator();
+      const gain = beepCtx.createGain();
+      osc.connect(gain);
+      gain.connect(beepCtx.destination);
+      osc.type = 'triangle';
+      const now = beepCtx.currentTime;
+      osc.frequency.value = 1000;
+      gain.gain.setValueAtTime(0.55, now);
+      gain.gain.linearRampToValueAtTime(0, now + 0.7);
+      osc.start(now);
+      osc.stop(now + 0.7);
+    }
+
+    // ── EVACUATE CAPTION ──────────────────────────────────────────────────────────
+    let evacuateShowing = false;
+    let evacuateLangEN = true;
+    let evacuateLangTimer = null;
+
+    function showEvacuateCaption() {
+      evacuateShowing = true;
+      evacuateLangEN = langEN;
+      renderEvacuate(evacuateLangEN);
+
+      evacuateLangTimer = setInterval(() => {
+        evacuateLangEN = !evacuateLangEN;
+        renderEvacuate(evacuateLangEN);
+      }, 4000);
+    }
+
+    function renderEvacuate(isEN) {
+      const el = document.getElementById('bb-caption');
+      const word = isEN ? 'EVACUATE' : 'อพยพ';
+      el.className = 'evacuate-mode';
+      el.innerHTML = '';
+      [...word].forEach((ch, i) => {
+        const span = document.createElement('span');
+        span.className = 'evac-letter';
+        span.textContent = ch === ' ' ? '\u00a0' : ch;
+        span.style.animationDelay = `${i * 0.07}s`;
+        el.appendChild(span);
+      });
+    }
+
+    function stopEvacuateCaption() {
+      evacuateShowing = false;
+      if (evacuateLangTimer) { clearInterval(evacuateLangTimer); evacuateLangTimer = null; }
+      const el = document.getElementById('bb-caption');
+      el.className = '';
+      el.innerHTML = '';
+    }
+
+    // ── ANNOUNCEMENT ──────────────────────────────────────────────────────────────
+    let lastAnnStatus = null;
+
+    function announce(status) {
+      if (status === lastAnnStatus) return;
+      lastAnnStatus = status;
+
+      stopBeep();
+      stopFlicker();
+      resetTileText();
+      beepEnabled = false;
+      if (status !== 'danger' && evacuateShowing) stopEvacuateCaption();
+      setCaption(getAnn(status));
+      if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
+
+      // Apply tile colours/flicker immediately (visual only — beep starts after audio)
+      applyTileState(status);
+
+      const audio = audioFiles[status];
+
+      if (audio && audioUnlocked) {
+        // Pause the flicker beep during announcement, resume after
+        audio.currentTime = 0;
+        audio.play().catch(() => { });
+        currentAudio = audio;
+
+        audio.onended = () => {
+          if (lastAnnStatus !== status) return;
+          beepEnabled = true;
+          if (status === 'danger') showEvacuateCaption();
+        };
+      } else if (!audio && audioUnlocked) {
+        // No audio file — enable beep and evacuate immediately
+        beepEnabled = true;
+        if (status === 'danger') showEvacuateCaption();
+      }
+    }
+
+    function setCaption(text) {
+      if (evacuateShowing) return;   // don't overwrite evacuate
+      const el = document.getElementById('bb-caption');
+      el.className = '';
+      el.style.opacity = 0;
+      setTimeout(() => { el.textContent = text; el.style.opacity = 1; }, 400);
+    }
+
+    // ── TILE FLICKER ──────────────────────────────────────────────────────────────
+    let flickerTimer = null;
+    let flickerRunning = false;
+    let beepEnabled = false;   // false during announcement, true after it ends
+
+    const FLICKER_COLOURS = {
+      warning: {
+        bg: ['#fff8e6', '#f5a623'],
+        text: ['#7a4f00', '#111111'],
+      },
+      danger: {
+        bg: ['#fde8ec', '#e5193a'],
+        text: ['#7a0010', '#ffffff'],
+      },
     };
 
-    applyFlicker();
-    flickerInterval = setInterval(applyFlicker, ms);
-  }
-}
-
-// ── RENDER ────────────────────────────────────────────────────────────────────
-function render(data) {
-  const status = getStatus(currentLevel);
-  applyTileState(status);
-
-  document.getElementById('water-cm').textContent           = currentLevel;
-  document.getElementById('water-unit').textContent         = t('unit');
-  document.getElementById('water-status-badge').textContent = t(status);
-
-  document.getElementById('wl-label').textContent    = t('tileWL');
-  document.getElementById('ss-label').textContent    = t('tileSS');
-  document.getElementById('trend-label').textContent = t('tileTrend');
-  document.getElementById('sensor-key').textContent  = t('sensor');
-  document.getElementById('upd-key').textContent     = t('upd');
-  document.getElementById('sensor-val').textContent  = t('sensorOn');
-  document.getElementById('bb-label').textContent    = t('bbLabel');
-  document.getElementById('bb-lang').textContent     = langEN ? 'EN' : 'TH';
-
-  if (data) {
-    updateWifi(data.ping_ms);
-    updateLink(data.db_ok);
-    if (data.timestamp) {
-      const d = new Date(data.timestamp);
-      const pad = n => String(n).padStart(2,'0');
-      document.getElementById('upd-val').textContent =
-        `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    function stopFlicker() {
+      flickerRunning = false;
+      beepEnabled = false;
+      if (flickerTimer) { clearTimeout(flickerTimer); flickerTimer = null; }
     }
-    document.getElementById('sensor-dot').className = 'dot online';
-  } else {
-    updateWifi(null);
-    updateLink(false);
-    document.getElementById('sensor-dot').className = 'dot offline';
-    document.getElementById('upd-val').textContent = 'No signal';
-  }
 
-  renderTrend();
-}
+    function resetTileText() {
+      document.getElementById('water-status-badge').style.color = '';
+      document.getElementById('water-cm').style.color = '';
+      document.getElementById('water-unit').style.color = '';
+    }
 
-function renderTrend() {
-  const container = document.getElementById('trend-body');
-  container.innerHTML = '';
-  const maxCm = 100;
-  const rows = history.slice(-8).reverse();
-  if (!rows.length) {
-    container.innerHTML =
-      '<div style="font-family:\'IBMPlexSansThai\',sans-serif;font-size:11px;color:#bbb;text-align:center;padding-top:20px;">—</div>';
-    return;
-  }
-  rows.forEach(r => {
-    const pct = Math.min(100, (r.cm / maxCm) * 100);
-    const s   = getStatus(r.cm);
-    const div = document.createElement('div');
-    div.className = 'trend-row';
-    div.innerHTML = `
+    function applyTileState(status) {
+      stopFlicker();
+      resetTileText();
+
+      const tile = document.getElementById('water-tile');
+      tile.classList.remove('safe', 'warning', 'danger');
+      tile.style.transition = 'none';
+      tile.style.backgroundColor = '';
+      tile.classList.add(status);
+
+      if (status !== 'warning' && status !== 'danger') return;
+
+      const { bg, text } = FLICKER_COLOURS[status];
+      const ms = status === 'warning' ? 900 : 500;
+
+      // Fully self-contained — no shared flickerState variable
+      let phase = 0;   // 0 = colA, 1 = colB
+      flickerRunning = true;
+
+      function tick() {
+        if (!flickerRunning) return;
+
+        const tile = document.getElementById('water-tile');
+        const badge = document.getElementById('water-status-badge');
+        const cm = document.getElementById('water-cm');
+        const unit = document.getElementById('water-unit');
+
+        tile.style.backgroundColor = bg[phase];
+        badge.style.color = text[phase];
+        cm.style.color = phase === 1 ? text[1] : '#111';
+        unit.style.color = phase === 1 ? text[1] : '#333';
+
+        // Beep exactly when going to the bright phase, only after announcement
+        if (phase === 1 && beepEnabled) {
+          if (status === 'warning') makeWarningBeep();
+          else makeDangerBeep();
+        }
+        phase = 1 - phase;   // toggle 0↔1
+        flickerTimer = setTimeout(tick, ms);
+      }
+
+      tick();
+    }
+
+    // ── RENDER ────────────────────────────────────────────────────────────────────
+    let lastRenderedStatus = null;
+
+    function render(data) {
+      const status = getStatus(currentLevel);
+
+      // Only restart tile/flicker when status actually changes, and only after unlock
+      if (status !== lastRenderedStatus) {
+        lastRenderedStatus = status;
+        if (audioUnlocked) applyTileState(status);
+      }
+
+      document.getElementById('water-cm').textContent = currentLevel;
+      document.getElementById('water-unit').textContent = t('unit');
+      document.getElementById('water-status-badge').textContent = t(status);
+
+      document.getElementById('wl-label').textContent = t('tileWL');
+      document.getElementById('ss-label').textContent = t('tileSS');
+      document.getElementById('trend-label').textContent = t('tileTrend');
+      document.getElementById('sensor-key').textContent = t('sensor');
+      document.getElementById('upd-key').textContent = t('upd');
+      document.getElementById('sensor-val').textContent = t('sensorOn');
+      document.getElementById('bb-label').textContent = t('bbLabel');
+      document.getElementById('bb-lang').textContent = langEN ? 'EN' : 'TH';
+
+      if (data) {
+        updateWifi(data.ping_ms);
+        updateLink(data.db_ok);
+        if (data.timestamp) {
+          const d = new Date(data.timestamp);
+          const pad = n => String(n).padStart(2, '0');
+          document.getElementById('upd-val').textContent =
+            `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+        }
+        document.getElementById('sensor-dot').className = 'dot online';
+      } else {
+        updateWifi(null);
+        updateLink(false);
+        document.getElementById('sensor-dot').className = 'dot offline';
+        document.getElementById('upd-val').textContent = 'No signal';
+      }
+
+      renderTrend();
+    }
+
+    function renderTrend() {
+      const container = document.getElementById('trend-body');
+      container.innerHTML = '';
+      const maxCm = 100;
+      const rows = history.slice(-8).reverse();
+      if (!rows.length) {
+        container.innerHTML =
+          '<div style="font-family:\'IBMPlexSansThai\',sans-serif;font-size:11px;color:#bbb;text-align:center;padding-top:20px;">—</div>';
+        return;
+      }
+      rows.forEach(r => {
+        const pct = Math.min(100, (r.cm / maxCm) * 100);
+        const s = getStatus(r.cm);
+        const div = document.createElement('div');
+        div.className = 'trend-row';
+        div.innerHTML = `
       <span class="trend-time">${r.time}</span>
       <div class="trend-bar-wrap"><div class="trend-bar" style="width:${pct}%;background:${barColor(s)}"></div></div>
       <span class="trend-val">${r.cm}</span>`;
-    container.appendChild(div);
-  });
-}
-
-// ── LIVE API POLLING ──────────────────────────────────────────────────────────
-let lastTimestamp    = null;
-let lastDataReceived = null;
-let lastRenderData   = null;
-
-async function pollStatus() {
-  try {
-    const res  = await fetch(`${API_BASE}/status`, { signal: AbortSignal.timeout(2500) });
-    const data = await res.json();
-
-    lastDataReceived = Date.now();
-    lastRenderData   = data;
-
-    if (data.timestamp !== lastTimestamp) {
-      lastTimestamp = data.timestamp;
-      currentLevel  = data.level_cm;
-
-      const now = new Date();
-      const pad = n => String(n).padStart(2,'0');
-      history.push({
-        cm:   currentLevel,
-        time: `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`,
+        container.appendChild(div);
       });
-      if (history.length > 60) history.shift();
-
-      announce(getStatus(currentLevel));
     }
 
-    render(data);
-  } catch {
-    lastRenderData = null;
-    render(null);
-  }
-}
+    // ── LIVE API POLLING ──────────────────────────────────────────────────────────
+    let lastTimestamp = null;
+    let lastDataReceived = null;
+    let lastRenderData = null;
 
-// ── SENSOR OFFLINE WATCHDOG ───────────────────────────────────────────────────
-setInterval(() => {
-  const stale = !lastDataReceived || (Date.now() - lastDataReceived) > 10000;
-  if (stale) {
-    document.getElementById('sensor-dot').className = 'dot offline';
-    document.getElementById('sensor-val').textContent = langEN ? 'Offline' : 'ออฟไลน์';
-    document.getElementById('upd-val').textContent = 'No signal';
-    updateWifi(null);
-    updateLink(false);
-  }
-}, 1000);
+    async function pollStatus() {
+      try {
+        const res = await fetch(`${API_BASE}/status`, { signal: AbortSignal.timeout(2500) });
+        const data = await res.json();
 
-// ── LANGUAGE TOGGLE ───────────────────────────────────────────────────────────
-setInterval(() => {
-  langEN = !langEN;
-  render(lastRenderData);
-  // Don't overwrite evacuate caption with lang toggle
-  if (!evacuateShowing) setCaption(getAnn(getStatus(currentLevel)));
-}, 10000);
+        lastDataReceived = Date.now();
+        lastRenderData = data;
 
-// ── BOOT ──────────────────────────────────────────────────────────────────────
-setInterval(updateClock, 1000);
-setInterval(pollStatus,  POLL_MS);
-updateClock();
-pollStatus();
-setCaption('System ready — connecting to sensor...');
-</script>
+        if (data.timestamp !== lastTimestamp) {
+          lastTimestamp = data.timestamp;
+          currentLevel = data.level_cm;
+
+          const now = new Date();
+          const pad = n => String(n).padStart(2, '0');
+          history.push({
+            cm: currentLevel,
+            time: `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`,
+          });
+          if (history.length > 60) history.shift();
+
+          announce(getStatus(currentLevel));
+        }
+
+        render(data);
+      } catch {
+        lastRenderData = null;
+        render(null);
+      }
+    }
+
+    // ── SENSOR OFFLINE WATCHDOG ───────────────────────────────────────────────────
+    setInterval(() => {
+      const stale = !lastDataReceived || (Date.now() - lastDataReceived) > 10000;
+      if (stale) {
+        document.getElementById('sensor-dot').className = 'dot offline';
+        document.getElementById('sensor-val').textContent = langEN ? 'Offline' : 'ออฟไลน์';
+        document.getElementById('upd-val').textContent = 'No signal';
+        updateWifi(null);
+        updateLink(false);
+      }
+    }, 1000);
+
+    // ── LANGUAGE TOGGLE ───────────────────────────────────────────────────────────
+    setInterval(() => {
+      langEN = !langEN;
+      render(lastRenderData);
+      // Don't overwrite evacuate caption with lang toggle
+      if (!evacuateShowing) setCaption(getAnn(getStatus(currentLevel)));
+    }, 10000);
+
+    // ── BOOT ──────────────────────────────────────────────────────────────────────
+    setInterval(updateClock, 1000);
+    setInterval(pollStatus, POLL_MS);
+    updateClock();
+    pollStatus();
+    setCaption('System ready — connecting to sensor...');
+  </script>
 </body>
+
 </html>
