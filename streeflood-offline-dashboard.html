@@ -536,11 +536,15 @@
 
     .db-disc-cross {
       position: absolute;
-      top: -6px; right: -8px;
-      width: 22px; height: 22px;
+      top: -6px;
+      right: -8px;
+      width: 22px;
+      height: 22px;
       background: #e5193a;
       border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 12px;
       font-weight: 700;
       color: #fff;
@@ -565,6 +569,7 @@
       text-align: center;
       line-height: 1.6;
     }
+
     #trend-tile {
       flex: 1;
       min-height: 0;
@@ -640,7 +645,8 @@
     #fatal-banner {
       position: absolute;
       bottom: 0;
-      left: 0; right: 0;
+      left: 0;
+      right: 0;
       background: #1a0005;
       border-top: 2px solid #e5193a;
       display: flex;
@@ -799,7 +805,8 @@
       <div id="fatal-banner">
         <span id="fatal-icon">⚠</span>
         <div id="fatal-text">
-          FATAL ERROR — Sensor is offline. Water reading is the last data the sensor has sent.<span id="fatal-lastval"></span>
+          FATAL ERROR — Sensor is offline. Water reading is the last data the sensor has sent.<span
+            id="fatal-lastval"></span>
         </div>
       </div>
     </div>
@@ -814,15 +821,19 @@
         <div id="db-disconnect-tile">
           <div class="db-disc-wifi">
             <svg viewBox="0 0 80 56" width="64" height="48" xmlns="http://www.w3.org/2000/svg">
-              <path class="wifi-arc" style="stroke:#555;fill:none;stroke-width:6;stroke-linecap:round" d="M8,34 Q40,2 72,34"/>
-              <path class="wifi-arc" style="stroke:#555;fill:none;stroke-width:6;stroke-linecap:round" d="M18,42 Q40,18 62,42"/>
-              <path class="wifi-arc" style="stroke:#555;fill:none;stroke-width:6;stroke-linecap:round" d="M28,50 Q40,36 52,50"/>
-              <circle style="fill:#555" cx="40" cy="54" r="4"/>
+              <path class="wifi-arc" style="stroke:#555;fill:none;stroke-width:6;stroke-linecap:round"
+                d="M8,34 Q40,2 72,34" />
+              <path class="wifi-arc" style="stroke:#555;fill:none;stroke-width:6;stroke-linecap:round"
+                d="M18,42 Q40,18 62,42" />
+              <path class="wifi-arc" style="stroke:#555;fill:none;stroke-width:6;stroke-linecap:round"
+                d="M28,50 Q40,36 52,50" />
+              <circle style="fill:#555" cx="40" cy="54" r="4" />
             </svg>
             <div class="db-disc-cross" id="db-disc-cross">✕</div>
           </div>
           <div class="db-disc-title" id="db-disc-title">Database Disconnected</div>
-          <div class="db-disc-msg" id="db-disc-msg">System disconnected from database.<br>Now running on offline mode.</div>
+          <div class="db-disc-msg" id="db-disc-msg">System disconnected from database.<br>Now running on offline mode.
+          </div>
         </div>
 
         <div class="tile-label" id="ss-label">System Status</div>
@@ -999,30 +1010,30 @@
     }
 
     // ── DB DISCONNECT NOTIFICATION ────────────────────────────────────────────────
-    let lastDbOk       = true;
+    let lastDbOk = true;
     let dbNotifTimeout = null;
 
     function showDbTile(mode) {
       // mode: 'disconnect' | 'reconnect'
-      const tile  = document.getElementById('db-disconnect-tile');
+      const tile = document.getElementById('db-disconnect-tile');
       const title = document.getElementById('db-disc-title');
-      const msg   = document.getElementById('db-disc-msg');
-      const icon  = document.getElementById('db-disc-cross');
+      const msg = document.getElementById('db-disc-msg');
+      const icon = document.getElementById('db-disc-cross');
 
       if (mode === 'disconnect') {
-        tile.style.background    = '#1a1a1a';
-        title.textContent        = 'Database Disconnected';
-        title.style.color        = '#e5193a';
-        msg.innerHTML            = 'System disconnected from database.<br>Now running on offline mode.';
-        icon.textContent         = '✕';
-        icon.style.background    = '#e5193a';
+        tile.style.background = '#1a1a1a';
+        title.textContent = 'Database Disconnected';
+        title.style.color = '#e5193a';
+        msg.innerHTML = 'System disconnected from database.<br>Now running on offline mode.';
+        icon.textContent = '✕';
+        icon.style.background = '#e5193a';
       } else {
-        tile.style.background    = '#0d1f13';
-        title.textContent        = 'Connection Re-established';
-        title.style.color        = '#1db954';
-        msg.innerHTML            = 'Database connection restored.<br>System back online.';
-        icon.textContent         = '✓';
-        icon.style.background    = '#1db954';
+        tile.style.background = '#0d1f13';
+        title.textContent = 'Connection Re-established';
+        title.style.color = '#1db954';
+        msg.innerHTML = 'Database connection restored.<br>System back online.';
+        icon.textContent = '✓';
+        icon.style.background = '#1db954';
       }
 
       tile.classList.remove('hiding');
@@ -1037,8 +1048,8 @@
     }
 
     function checkDbStatus(dbOk) {
-      if (!dbOk && lastDbOk)  showDbTile('disconnect');   // ok → fail
-      if (dbOk  && !lastDbOk) showDbTile('reconnect');    // fail → ok
+      if (!dbOk && lastDbOk) showDbTile('disconnect');   // ok → fail
+      if (dbOk && !lastDbOk) showDbTile('reconnect');    // fail → ok
       lastDbOk = dbOk;
     }
 
@@ -1121,7 +1132,7 @@
       osc.type = 'triangle';
       const now = beepCtx.currentTime;
       osc.frequency.value = 500;
-      gain.gain.setValueAtTime(0.55, now);
+      gain.gain.setValueAtTime(0.55 * beepVolumeFactor, now);
       gain.gain.linearRampToValueAtTime(0, now + 0.7);
       osc.start(now);
       osc.stop(now + 0.7);
@@ -1136,29 +1147,29 @@
       osc.type = 'square';
       const now = beepCtx.currentTime;
       osc.frequency.value = 1000;
-      gain.gain.setValueAtTime(0.55, now);
+      gain.gain.setValueAtTime(0.55 * beepVolumeFactor, now);
       gain.gain.linearRampToValueAtTime(0, now + 0.7);
       osc.start(now);
       osc.stop(now + 0.7);
     }
 
     // ── BOTTOMBAR FLICKER (evacuate only) ────────────────────────────────────────
-    let bbFlickerTimer   = null;
+    let bbFlickerTimer = null;
     let bbFlickerRunning = false;
 
     function startBbFlicker() {
       bbFlickerRunning = true;
       let phase = 0;
       const bar = document.getElementById('bottombar');
-      const ms  = 120;
+      const ms = 300;
 
       function tick() {
         if (!bbFlickerRunning) return;
         bar.style.backgroundColor = phase === 0 ? '#111111' : '#e5193a';
-        bar.style.color           = phase === 0 ? '#ff4444' : '#ffffff';
-        document.getElementById('bb-label').style.color   = phase === 0 ? '#555'   : '#ffffff';
-        document.getElementById('bb-lang').style.color    = phase === 0 ? '#555'   : '#ffffff';
-        document.getElementById('bb-caption').style.color = phase === 0 ? '#ff4444': '#ffffff';
+        bar.style.color = phase === 0 ? '#ff4444' : '#ffffff';
+        document.getElementById('bb-label').style.color = phase === 0 ? '#555' : '#ffffff';
+        document.getElementById('bb-lang').style.color = phase === 0 ? '#555' : '#ffffff';
+        document.getElementById('bb-caption').style.color = phase === 0 ? '#ff4444' : '#ffffff';
         phase = 1 - phase;
         bbFlickerTimer = setTimeout(tick, ms);
       }
@@ -1170,9 +1181,9 @@
       if (bbFlickerTimer) { clearTimeout(bbFlickerTimer); bbFlickerTimer = null; }
       const bar = document.getElementById('bottombar');
       bar.style.backgroundColor = '';
-      bar.style.color           = '';
-      document.getElementById('bb-label').style.color   = '';
-      document.getElementById('bb-lang').style.color    = '';
+      bar.style.color = '';
+      document.getElementById('bb-label').style.color = '';
+      document.getElementById('bb-lang').style.color = '';
       document.getElementById('bb-caption').style.color = '';
     }
 
@@ -1227,6 +1238,7 @@
       stopFlicker();
       resetTileText();
       beepEnabled = false;
+      beepVolumeFactor = 1.0;
       if (status !== 'danger' && evacuateShowing) stopEvacuateCaption();
       setCaption(getAnn(status));
       if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
@@ -1237,19 +1249,22 @@
       const audio = audioFiles[status];
 
       if (audio && audioUnlocked) {
-        // Pause the flicker beep during announcement, resume after
+        // Play beep at 50% volume during announcement, full volume after
+        beepEnabled = true;
+        beepVolumeFactor = 0.5;
         audio.currentTime = 0;
         audio.play().catch(() => { });
         currentAudio = audio;
 
         audio.onended = () => {
           if (lastAnnStatus !== status) return;
-          beepEnabled = true;
+          beepVolumeFactor = 1.0;
           if (status === 'danger') showEvacuateCaption();
         };
       } else if (!audio && audioUnlocked) {
         // No audio file — enable beep and evacuate immediately
         beepEnabled = true;
+        beepVolumeFactor = 1.0;
         if (status === 'danger') showEvacuateCaption();
       }
     }
@@ -1266,6 +1281,7 @@
     let flickerTimer = null;
     let flickerRunning = false;
     let beepEnabled = false;   // false during announcement, true after it ends
+    let beepVolumeFactor = 1.0; // 0.5 during announcement, 1.0 after it ends
 
     const FLICKER_COLOURS = {
       warning: {
@@ -1280,7 +1296,6 @@
 
     function stopFlicker() {
       flickerRunning = false;
-      beepEnabled = false;
       if (flickerTimer) { clearTimeout(flickerTimer); flickerTimer = null; }
     }
 
@@ -1380,14 +1395,14 @@
 
     function renderTrend() {
       const canvas = document.getElementById('trend-canvas');
-      const body   = document.getElementById('trend-body');
+      const body = document.getElementById('trend-body');
       if (!canvas) return;
 
       // Size canvas to its CSS container
-      const W = body.clientWidth  - 28;
+      const W = body.clientWidth - 28;
       const H = body.clientHeight - 22;
       if (W <= 0 || H <= 0) return;
-      canvas.width  = W;
+      canvas.width = W;
       canvas.height = H;
 
       const ctx = canvas.getContext('2d');
@@ -1407,16 +1422,16 @@
         if (ratio < 0.5) {
           // green → yellow
           const t = ratio / 0.5;
-          const r = Math.round(29  + (245 - 29)  * t);
+          const r = Math.round(29 + (245 - 29) * t);
           const g = Math.round(185 + (166 - 185) * t);
-          const b = Math.round(84  + (35  - 84)  * t);
+          const b = Math.round(84 + (35 - 84) * t);
           return `rgb(${r},${g},${b})`;
         } else {
           // yellow → red
           const t = (ratio - 0.5) / 0.5;
           const r = Math.round(245 + (229 - 245) * t);
-          const g = Math.round(166 + (25  - 166) * t);
-          const b = Math.round(35  + (58  - 35)  * t);
+          const g = Math.round(166 + (25 - 166) * t);
+          const b = Math.round(35 + (58 - 35) * t);
           return `rgb(${r},${g},${b})`;
         }
       }
@@ -1428,9 +1443,9 @@
       const gridSteps = ceiling <= 20 ? 4 : ceiling / 10;
       for (let i = 0; i <= gridSteps; i++) {
         const val = (ceiling / gridSteps) * i;
-        const y   = PAD_T + gH - (val / ceiling) * gH;
+        const y = PAD_T + gH - (val / ceiling) * gH;
         ctx.strokeStyle = i === 0 ? '#ccc' : '#e8e8e8';
-        ctx.lineWidth   = i === 0 ? 1.5 : 0.8;
+        ctx.lineWidth = i === 0 ? 1.5 : 0.8;
         ctx.beginPath(); ctx.moveTo(PAD_L, y); ctx.lineTo(PAD_L + gW, y); ctx.stroke();
         ctx.fillStyle = '#aaa';
         ctx.fillText(Math.round(val), PAD_L - 4, y);
@@ -1439,7 +1454,7 @@
       if (!history.length) return;
 
       const pts = history.slice(-30);   // last 30 readings
-      const n   = pts.length;
+      const n = pts.length;
 
       // X positions
       const xOf = i => PAD_L + (i / Math.max(n - 1, 1)) * gW;
@@ -1447,9 +1462,9 @@
 
       // Filled area with vertical gradient
       const grad = ctx.createLinearGradient(0, PAD_T, 0, PAD_T + gH);
-      grad.addColorStop(0,    'rgba(229,25,58,0.35)');
-      grad.addColorStop(0.5,  'rgba(245,166,35,0.25)');
-      grad.addColorStop(1,    'rgba(29,185,84,0.15)');
+      grad.addColorStop(0, 'rgba(229,25,58,0.35)');
+      grad.addColorStop(0.5, 'rgba(245,166,35,0.25)');
+      grad.addColorStop(1, 'rgba(29,185,84,0.15)');
 
       ctx.beginPath();
       ctx.moveTo(xOf(0), PAD_T + gH);
@@ -1464,10 +1479,10 @@
         const midVal = (pts[i - 1].cm + pts[i].cm) / 2;
         ctx.beginPath();
         ctx.moveTo(xOf(i - 1), yOf(pts[i - 1].cm));
-        ctx.lineTo(xOf(i),     yOf(pts[i].cm));
+        ctx.lineTo(xOf(i), yOf(pts[i].cm));
         ctx.strokeStyle = levelColour(midVal);
-        ctx.lineWidth   = 2;
-        ctx.lineJoin    = 'round';
+        ctx.lineWidth = 2;
+        ctx.lineJoin = 'round';
         ctx.stroke();
       }
 
@@ -1475,16 +1490,16 @@
       pts.forEach((r, i) => {
         ctx.beginPath();
         ctx.arc(xOf(i), yOf(r.cm), 3, 0, Math.PI * 2);
-        ctx.fillStyle   = levelColour(r.cm);
+        ctx.fillStyle = levelColour(r.cm);
         ctx.strokeStyle = '#fff';
-        ctx.lineWidth   = 1.5;
+        ctx.lineWidth = 1.5;
         ctx.fill();
         ctx.stroke();
       });
 
       // X-axis time labels (first, mid, last)
-      ctx.fillStyle   = '#aaa';
-      ctx.textAlign   = 'center';
+      ctx.fillStyle = '#aaa';
+      ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.font = '9px IBMPlexSansThai, sans-serif';
       const labelIdx = [0, Math.floor((n - 1) / 2), n - 1].filter((v, i, a) => a.indexOf(v) === i);
@@ -1503,13 +1518,13 @@
     }
 
     // ── LIVE API POLLING ──────────────────────────────────────────────────────────
-    let lastTimestamp       = null;
-    let lastDataReceived    = null;
-    let lastRenderData      = null;
-    let lastNewReadingTime  = null;   // when WE last got a new timestamp from the sensor
-    let sensorOnline      = null;   // null = unknown, true = online, false = offline
-    let sensorFlickTimer  = null;
-    let sensorFlickPhase  = 0;
+    let lastTimestamp = null;
+    let lastDataReceived = null;
+    let lastRenderData = null;
+    let lastNewReadingTime = null;   // when WE last got a new timestamp from the sensor
+    let sensorOnline = null;   // null = unknown, true = online, false = offline
+    let sensorFlickTimer = null;
+    let sensorFlickPhase = 0;
 
     function stopSensorFlick() {
       if (sensorFlickTimer) { clearTimeout(sensorFlickTimer); sensorFlickTimer = null; }
@@ -1520,18 +1535,18 @@
       if (sensorOnline === online) return;
       sensorOnline = online;
 
-      const tile   = document.getElementById('sensor-status-tile');
-      const lbl    = document.getElementById('sensor-key');
-      const val    = document.getElementById('sensor-val');
+      const tile = document.getElementById('sensor-status-tile');
+      const lbl = document.getElementById('sensor-key');
+      const val = document.getElementById('sensor-val');
       const banner = document.getElementById('fatal-banner');
 
       stopSensorFlick();
 
       if (online) {
         tile.style.background = '#e8fbef';
-        lbl.style.color       = '#1a6e35';
-        val.style.color       = '#1a6e35';
-        val.textContent       = t('sensorOn');
+        lbl.style.color = '#1a6e35';
+        val.style.color = '#1a6e35';
+        val.textContent = t('sensorOn');
         banner.classList.remove('visible');
       } else {
         val.textContent = langEN ? 'Offline' : 'ออฟไลน์';
@@ -1547,8 +1562,8 @@
         const flick = () => {
           const bright = sensorFlickPhase === 1;
           tile.style.background = bright ? '#e5193a' : '#fde8ec';
-          lbl.style.color       = bright ? '#ffffff'  : '#7a0010';
-          val.style.color       = bright ? '#ffffff'  : '#7a0010';
+          lbl.style.color = bright ? '#ffffff' : '#7a0010';
+          val.style.color = bright ? '#ffffff' : '#7a0010';
           sensorFlickPhase = 1 - sensorFlickPhase;
           sensorFlickTimer = setTimeout(flick, 600);
         };
@@ -1558,21 +1573,21 @@
 
     async function pollStatus() {
       try {
-        const res  = await fetch(`${API_BASE}/status`, { signal: AbortSignal.timeout(2500) });
+        const res = await fetch(`${API_BASE}/status`, { signal: AbortSignal.timeout(2500) });
         const data = await res.json();
 
         lastDataReceived = Date.now();
-        lastRenderData   = data;
+        lastRenderData = data;
 
         if (data.timestamp !== lastTimestamp) {
-          lastTimestamp      = data.timestamp;
+          lastTimestamp = data.timestamp;
           lastNewReadingTime = Date.now();
-          currentLevel       = data.level_cm;
+          currentLevel = data.level_cm;
 
           const now = new Date();
           const pad = n => String(n).padStart(2, '0');
           history.push({
-            cm:   currentLevel,
+            cm: currentLevel,
             time: `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`,
           });
           if (history.length > 60) history.shift();
