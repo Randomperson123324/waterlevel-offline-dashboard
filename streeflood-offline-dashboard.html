@@ -131,6 +131,7 @@
       gap: 0;
       padding: 0;
       min-height: 0;
+      overflow: hidden;
     }
 
     /* ── TILE BASE ── */
@@ -140,6 +141,7 @@
       display: flex;
       flex-direction: column;
       border-radius: 0;
+      min-height: 0;
     }
 
     /* collapse double borders */
@@ -147,15 +149,19 @@
       border-right: none;
       border-bottom: none;
       border-top: none;
+      overflow: hidden;
     }
 
     #sys-tile {
       border-bottom: none;
       border-top: none;
+      flex-shrink: 0;
     }
 
     #trend-tile {
       border-top: none;
+      min-height: 0;
+      flex: 1;
     }
 
     .tile-label {
@@ -190,6 +196,8 @@
 
     #water-body {
       flex: 1;
+      min-height: 0;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -242,6 +250,8 @@
       display: flex;
       flex-direction: column;
       gap: 0;
+      min-height: 0;
+      overflow: hidden;
     }
 
     /* ── SYSTEM STATUS TILE ── */
@@ -409,6 +419,36 @@
       background: #e5193a;
     }
 
+    /* ── SENSOR STATUS TILE ── */
+    #sensor-status-tile {
+      margin: 0;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: #e8fbef;
+      transition: none;
+    }
+
+    #sensor-status-tile .sensor-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #1a6e35;
+    }
+
+    #sensor-status-tile .sensor-val {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: #1a6e35;
+      text-transform: uppercase;
+    }
+
     /* Sys rows (sensor + last update) */
     .sys-row {
       display: flex;
@@ -457,53 +497,91 @@
       background: #e5193a;
     }
 
-    /* ── TREND TILE ── */
+    /* ── DB DISCONNECT NOTIFICATION ── */
+    #sys-tile {
+      position: relative;
+      overflow: hidden;
+    }
+
+    #db-disconnect-tile {
+      position: absolute;
+      inset: 0;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 24px;
+      z-index: 100;
+      transform: translateX(110%);
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      border-radius: 2px;
+    }
+
+    #db-disconnect-tile.visible {
+      transform: translateX(0);
+    }
+
+    #db-disconnect-tile.hiding {
+      transform: translateX(110%);
+    }
+
+    .db-disc-wifi {
+      position: relative;
+      width: 64px;
+      height: 56px;
+    }
+
+    .db-disc-cross {
+      position: absolute;
+      top: -6px; right: -8px;
+      width: 22px; height: 22px;
+      background: #e5193a;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      border: 2px solid #1a1a1a;
+    }
+
+    .db-disc-title {
+      font-family: 'IBMPlexSansThai', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      color: #e5193a;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .db-disc-msg {
+      font-family: 'IBMPlexSansThai', sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: #ccc;
+      text-align: center;
+      line-height: 1.6;
+    }
     #trend-tile {
       flex: 1;
       min-height: 0;
     }
 
     #trend-body {
-      padding: 16px 20px;
+      padding: 12px 14px 10px;
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      min-height: 0;
     }
 
-    .trend-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 400;
-      color: #666;
-    }
-
-    .trend-time {
-      width: 52px;
-      color: #aaa;
-      letter-spacing: 0.03em;
-    }
-
-    .trend-bar-wrap {
+    #trend-canvas {
+      width: 100%;
       flex: 1;
-      background: #f0f2f5;
-      height: 14px;
-      border-radius: 1px;
-      overflow: hidden;
-    }
-
-    .trend-bar {
-      height: 100%;
-      border-radius: 1px;
-      transition: width 0.6s ease;
-    }
-
-    .trend-val {
-      width: 36px;
-      text-align: right;
+      display: block;
     }
 
     /* ── BOTTOM BAR ── */
@@ -557,6 +635,52 @@
       color: #555;
       flex-shrink: 0;
     }
+
+    /* ── FATAL ERROR BANNER ── */
+    #fatal-banner {
+      position: absolute;
+      bottom: 0;
+      left: 0; right: 0;
+      background: #1a0005;
+      border-top: 2px solid #e5193a;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 20px;
+      height: 56px;
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 200;
+    }
+
+    #fatal-banner.visible {
+      transform: translateY(0);
+    }
+
+    #fatal-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+      color: #e5193a;
+    }
+
+    #fatal-text {
+      font-family: 'IBMPlexSansThai', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: #ff6b6b;
+      flex: 1;
+    }
+
+    #fatal-text span {
+      color: #888;
+      font-weight: 400;
+      font-size: 11px;
+      margin-left: 12px;
+      letter-spacing: 0.04em;
+    }
+
+
 
     /* ── UNLOCK OVERLAY ── */
     #unlock-overlay {
@@ -670,6 +794,14 @@
         <div id="water-unit">CENTIMETRES</div>
         <div id="water-status-badge">SAFE</div>
       </div>
+
+      <!-- FATAL ERROR BANNER (inside water tile) -->
+      <div id="fatal-banner">
+        <span id="fatal-icon">⚠</span>
+        <div id="fatal-text">
+          FATAL ERROR — Sensor is offline. Water reading is the last data the sensor has sent.<span id="fatal-lastval"></span>
+        </div>
+      </div>
     </div>
 
     <!-- RIGHT COLUMN -->
@@ -677,6 +809,22 @@
 
       <!-- System Status -->
       <div class="tile" id="sys-tile">
+
+        <!-- DB Disconnect Notification -->
+        <div id="db-disconnect-tile">
+          <div class="db-disc-wifi">
+            <svg viewBox="0 0 80 56" width="64" height="48" xmlns="http://www.w3.org/2000/svg">
+              <path class="wifi-arc" style="stroke:#555;fill:none;stroke-width:6;stroke-linecap:round" d="M8,34 Q40,2 72,34"/>
+              <path class="wifi-arc" style="stroke:#555;fill:none;stroke-width:6;stroke-linecap:round" d="M18,42 Q40,18 62,42"/>
+              <path class="wifi-arc" style="stroke:#555;fill:none;stroke-width:6;stroke-linecap:round" d="M28,50 Q40,36 52,50"/>
+              <circle style="fill:#555" cx="40" cy="54" r="4"/>
+            </svg>
+            <div class="db-disc-cross" id="db-disc-cross">✕</div>
+          </div>
+          <div class="db-disc-title" id="db-disc-title">Database Disconnected</div>
+          <div class="db-disc-msg" id="db-disc-msg">System disconnected from database.<br>Now running on offline mode.</div>
+        </div>
+
         <div class="tile-label" id="ss-label">System Status</div>
         <div id="sys-body">
 
@@ -733,12 +881,13 @@
             </div>
           </div>
 
-          <!-- Sensor + Last update rows -->
-          <div class="sys-row">
-            <span class="sys-key" id="sensor-key">Sensor</span>
-            <span class="sys-val"><span class="dot online" id="sensor-dot"></span><span
-                id="sensor-val">Active</span></span>
+          <!-- Sensor status tile -->
+          <div id="sensor-status-tile">
+            <span class="sensor-label" id="sensor-key">Sensor</span>
+            <span class="sensor-val" id="sensor-val">Offline</span>
           </div>
+
+          <!-- Last update row -->
           <div class="sys-row">
             <span class="sys-key" id="upd-key">Last Update</span>
             <span class="sys-val" id="upd-val">—</span>
@@ -750,7 +899,9 @@
       <!-- Trend -->
       <div class="tile" id="trend-tile">
         <div class="tile-label" id="trend-label">Recent Readings</div>
-        <div id="trend-body" id="trend-rows"></div>
+        <div id="trend-body">
+          <canvas id="trend-canvas"></canvas>
+        </div>
       </div>
 
     </div>
@@ -764,6 +915,8 @@
       <div class="u-sub">คลิกที่ใดก็ได้เพื่อเริ่ม</div>
     </div>
   </div>
+
+
 
   <!-- BOTTOM BAR -->
   <div id="bottombar">
@@ -843,6 +996,50 @@
       document.getElementById('wifi-arc3').setAttribute('class', arcCls(bars >= 3));
       document.getElementById('wifi-dot').setAttribute('class', 'wifi-dot ' + (hasSignal ? cls : 'off'));
       document.getElementById('wifi-ping').textContent = hasSignal ? `${pingMs} ms` : '— ms';
+    }
+
+    // ── DB DISCONNECT NOTIFICATION ────────────────────────────────────────────────
+    let lastDbOk       = true;
+    let dbNotifTimeout = null;
+
+    function showDbTile(mode) {
+      // mode: 'disconnect' | 'reconnect'
+      const tile  = document.getElementById('db-disconnect-tile');
+      const title = document.getElementById('db-disc-title');
+      const msg   = document.getElementById('db-disc-msg');
+      const icon  = document.getElementById('db-disc-cross');
+
+      if (mode === 'disconnect') {
+        tile.style.background    = '#1a1a1a';
+        title.textContent        = 'Database Disconnected';
+        title.style.color        = '#e5193a';
+        msg.innerHTML            = 'System disconnected from database.<br>Now running on offline mode.';
+        icon.textContent         = '✕';
+        icon.style.background    = '#e5193a';
+      } else {
+        tile.style.background    = '#0d1f13';
+        title.textContent        = 'Connection Re-established';
+        title.style.color        = '#1db954';
+        msg.innerHTML            = 'Database connection restored.<br>System back online.';
+        icon.textContent         = '✓';
+        icon.style.background    = '#1db954';
+      }
+
+      tile.classList.remove('hiding');
+      tile.classList.add('visible');
+
+      if (dbNotifTimeout) clearTimeout(dbNotifTimeout);
+      dbNotifTimeout = setTimeout(() => {
+        tile.classList.remove('visible');
+        tile.classList.add('hiding');
+        setTimeout(() => tile.classList.remove('hiding'), 500);
+      }, 5000);
+    }
+
+    function checkDbStatus(dbOk) {
+      if (!dbOk && lastDbOk)  showDbTile('disconnect');   // ok → fail
+      if (dbOk  && !lastDbOk) showDbTile('reconnect');    // fail → ok
+      lastDbOk = dbOk;
     }
 
     // ── DB LINK VISUAL ────────────────────────────────────────────────────────────
@@ -936,13 +1133,47 @@
       const gain = beepCtx.createGain();
       osc.connect(gain);
       gain.connect(beepCtx.destination);
-      osc.type = 'triangle';
+      osc.type = 'square';
       const now = beepCtx.currentTime;
       osc.frequency.value = 1000;
       gain.gain.setValueAtTime(0.55, now);
       gain.gain.linearRampToValueAtTime(0, now + 0.7);
       osc.start(now);
       osc.stop(now + 0.7);
+    }
+
+    // ── BOTTOMBAR FLICKER (evacuate only) ────────────────────────────────────────
+    let bbFlickerTimer   = null;
+    let bbFlickerRunning = false;
+
+    function startBbFlicker() {
+      bbFlickerRunning = true;
+      let phase = 0;
+      const bar = document.getElementById('bottombar');
+      const ms  = 120;
+
+      function tick() {
+        if (!bbFlickerRunning) return;
+        bar.style.backgroundColor = phase === 0 ? '#111111' : '#e5193a';
+        bar.style.color           = phase === 0 ? '#ff4444' : '#ffffff';
+        document.getElementById('bb-label').style.color   = phase === 0 ? '#555'   : '#ffffff';
+        document.getElementById('bb-lang').style.color    = phase === 0 ? '#555'   : '#ffffff';
+        document.getElementById('bb-caption').style.color = phase === 0 ? '#ff4444': '#ffffff';
+        phase = 1 - phase;
+        bbFlickerTimer = setTimeout(tick, ms);
+      }
+      tick();
+    }
+
+    function stopBbFlicker() {
+      bbFlickerRunning = false;
+      if (bbFlickerTimer) { clearTimeout(bbFlickerTimer); bbFlickerTimer = null; }
+      const bar = document.getElementById('bottombar');
+      bar.style.backgroundColor = '';
+      bar.style.color           = '';
+      document.getElementById('bb-label').style.color   = '';
+      document.getElementById('bb-lang').style.color    = '';
+      document.getElementById('bb-caption').style.color = '';
     }
 
     // ── EVACUATE CAPTION ──────────────────────────────────────────────────────────
@@ -954,6 +1185,7 @@
       evacuateShowing = true;
       evacuateLangEN = langEN;
       renderEvacuate(evacuateLangEN);
+      startBbFlicker();
 
       evacuateLangTimer = setInterval(() => {
         evacuateLangEN = !evacuateLangEN;
@@ -977,6 +1209,7 @@
 
     function stopEvacuateCaption() {
       evacuateShowing = false;
+      stopBbFlicker();
       if (evacuateLangTimer) { clearInterval(evacuateLangTimer); evacuateLangTimer = null; }
       const el = document.getElementById('bb-caption');
       el.className = '';
@@ -1122,24 +1355,23 @@
       document.getElementById('trend-label').textContent = t('tileTrend');
       document.getElementById('sensor-key').textContent = t('sensor');
       document.getElementById('upd-key').textContent = t('upd');
-      document.getElementById('sensor-val').textContent = t('sensorOn');
       document.getElementById('bb-label').textContent = t('bbLabel');
       document.getElementById('bb-lang').textContent = langEN ? 'EN' : 'TH';
 
       if (data) {
         updateWifi(data.ping_ms);
         updateLink(data.db_ok);
+        checkDbStatus(data.db_ok);
         if (data.timestamp) {
           const d = new Date(data.timestamp);
           const pad = n => String(n).padStart(2, '0');
           document.getElementById('upd-val').textContent =
             `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
         }
-        document.getElementById('sensor-dot').className = 'dot online';
       } else {
         updateWifi(null);
         updateLink(false);
-        document.getElementById('sensor-dot').className = 'dot offline';
+        checkDbStatus(false);
         document.getElementById('upd-val').textContent = 'No signal';
       }
 
@@ -1147,49 +1379,200 @@
     }
 
     function renderTrend() {
-      const container = document.getElementById('trend-body');
-      container.innerHTML = '';
-      const maxCm = 100;
-      const rows = history.slice(-8).reverse();
-      if (!rows.length) {
-        container.innerHTML =
-          '<div style="font-family:\'IBMPlexSansThai\',sans-serif;font-size:11px;color:#bbb;text-align:center;padding-top:20px;">—</div>';
-        return;
+      const canvas = document.getElementById('trend-canvas');
+      const body   = document.getElementById('trend-body');
+      if (!canvas) return;
+
+      // Size canvas to its CSS container
+      const W = body.clientWidth  - 28;
+      const H = body.clientHeight - 22;
+      if (W <= 0 || H <= 0) return;
+      canvas.width  = W;
+      canvas.height = H;
+
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, W, H);
+
+      const PAD_L = 32, PAD_R = 8, PAD_T = 8, PAD_B = 24;
+      const gW = W - PAD_L - PAD_R;
+      const gH = H - PAD_T - PAD_B;
+
+      // Dynamic ceiling: at least 20, expand in steps of 10 to fit max value
+      const maxVal = history.length ? Math.max(...history.map(r => r.cm)) : 0;
+      const ceiling = Math.max(20, Math.ceil(maxVal / 10) * 10);
+
+      // Gradient definition (green → yellow → red) mapped by value ratio
+      function levelColour(val) {
+        const ratio = Math.min(1, val / ceiling);
+        if (ratio < 0.5) {
+          // green → yellow
+          const t = ratio / 0.5;
+          const r = Math.round(29  + (245 - 29)  * t);
+          const g = Math.round(185 + (166 - 185) * t);
+          const b = Math.round(84  + (35  - 84)  * t);
+          return `rgb(${r},${g},${b})`;
+        } else {
+          // yellow → red
+          const t = (ratio - 0.5) / 0.5;
+          const r = Math.round(245 + (229 - 245) * t);
+          const g = Math.round(166 + (25  - 166) * t);
+          const b = Math.round(35  + (58  - 35)  * t);
+          return `rgb(${r},${g},${b})`;
+        }
       }
-      rows.forEach(r => {
-        const pct = Math.min(100, (r.cm / maxCm) * 100);
-        const s = getStatus(r.cm);
-        const div = document.createElement('div');
-        div.className = 'trend-row';
-        div.innerHTML = `
-      <span class="trend-time">${r.time}</span>
-      <div class="trend-bar-wrap"><div class="trend-bar" style="width:${pct}%;background:${barColor(s)}"></div></div>
-      <span class="trend-val">${r.cm}</span>`;
-        container.appendChild(div);
+
+      // Grid lines & Y labels
+      ctx.font = '9px IBMPlexSansThai, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      const gridSteps = ceiling <= 20 ? 4 : ceiling / 10;
+      for (let i = 0; i <= gridSteps; i++) {
+        const val = (ceiling / gridSteps) * i;
+        const y   = PAD_T + gH - (val / ceiling) * gH;
+        ctx.strokeStyle = i === 0 ? '#ccc' : '#e8e8e8';
+        ctx.lineWidth   = i === 0 ? 1.5 : 0.8;
+        ctx.beginPath(); ctx.moveTo(PAD_L, y); ctx.lineTo(PAD_L + gW, y); ctx.stroke();
+        ctx.fillStyle = '#aaa';
+        ctx.fillText(Math.round(val), PAD_L - 4, y);
+      }
+
+      if (!history.length) return;
+
+      const pts = history.slice(-30);   // last 30 readings
+      const n   = pts.length;
+
+      // X positions
+      const xOf = i => PAD_L + (i / Math.max(n - 1, 1)) * gW;
+      const yOf = v => PAD_T + gH - Math.min(1, v / ceiling) * gH;
+
+      // Filled area with vertical gradient
+      const grad = ctx.createLinearGradient(0, PAD_T, 0, PAD_T + gH);
+      grad.addColorStop(0,    'rgba(229,25,58,0.35)');
+      grad.addColorStop(0.5,  'rgba(245,166,35,0.25)');
+      grad.addColorStop(1,    'rgba(29,185,84,0.15)');
+
+      ctx.beginPath();
+      ctx.moveTo(xOf(0), PAD_T + gH);
+      pts.forEach((r, i) => ctx.lineTo(xOf(i), yOf(r.cm)));
+      ctx.lineTo(xOf(n - 1), PAD_T + gH);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Line with per-segment colour
+      for (let i = 1; i < n; i++) {
+        const midVal = (pts[i - 1].cm + pts[i].cm) / 2;
+        ctx.beginPath();
+        ctx.moveTo(xOf(i - 1), yOf(pts[i - 1].cm));
+        ctx.lineTo(xOf(i),     yOf(pts[i].cm));
+        ctx.strokeStyle = levelColour(midVal);
+        ctx.lineWidth   = 2;
+        ctx.lineJoin    = 'round';
+        ctx.stroke();
+      }
+
+      // Dots
+      pts.forEach((r, i) => {
+        ctx.beginPath();
+        ctx.arc(xOf(i), yOf(r.cm), 3, 0, Math.PI * 2);
+        ctx.fillStyle   = levelColour(r.cm);
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth   = 1.5;
+        ctx.fill();
+        ctx.stroke();
       });
+
+      // X-axis time labels (first, mid, last)
+      ctx.fillStyle   = '#aaa';
+      ctx.textAlign   = 'center';
+      ctx.textBaseline = 'top';
+      ctx.font = '9px IBMPlexSansThai, sans-serif';
+      const labelIdx = [0, Math.floor((n - 1) / 2), n - 1].filter((v, i, a) => a.indexOf(v) === i);
+      labelIdx.forEach(i => {
+        ctx.fillText(pts[i].time, xOf(i), PAD_T + gH + 6);
+      });
+
+      // Ceiling indicator if expanded
+      if (ceiling > 20) {
+        ctx.fillStyle = '#e5193a';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.font = 'bold 9px IBMPlexSansThai, sans-serif';
+        ctx.fillText(`▲ max ${ceiling} cm`, PAD_L + 2, PAD_T + 1);
+      }
     }
 
     // ── LIVE API POLLING ──────────────────────────────────────────────────────────
-    let lastTimestamp = null;
-    let lastDataReceived = null;
-    let lastRenderData = null;
+    let lastTimestamp       = null;
+    let lastDataReceived    = null;
+    let lastRenderData      = null;
+    let lastNewReadingTime  = null;   // when WE last got a new timestamp from the sensor
+    let sensorOnline      = null;   // null = unknown, true = online, false = offline
+    let sensorFlickTimer  = null;
+    let sensorFlickPhase  = 0;
+
+    function stopSensorFlick() {
+      if (sensorFlickTimer) { clearTimeout(sensorFlickTimer); sensorFlickTimer = null; }
+      sensorFlickPhase = 0;
+    }
+
+    function setSensorDot(online) {
+      if (sensorOnline === online) return;
+      sensorOnline = online;
+
+      const tile   = document.getElementById('sensor-status-tile');
+      const lbl    = document.getElementById('sensor-key');
+      const val    = document.getElementById('sensor-val');
+      const banner = document.getElementById('fatal-banner');
+
+      stopSensorFlick();
+
+      if (online) {
+        tile.style.background = '#e8fbef';
+        lbl.style.color       = '#1a6e35';
+        val.style.color       = '#1a6e35';
+        val.textContent       = t('sensorOn');
+        banner.classList.remove('visible');
+      } else {
+        val.textContent = langEN ? 'Offline' : 'ออฟไลน์';
+
+        // Update last known value in banner
+        const lastVal = document.getElementById('fatal-lastval');
+        if (lastVal) lastVal.textContent = currentLevel !== null ? ` (${currentLevel} cm)` : '';
+
+        // Show fatal banner
+        banner.classList.add('visible');
+
+        // Flicker tile red
+        const flick = () => {
+          const bright = sensorFlickPhase === 1;
+          tile.style.background = bright ? '#e5193a' : '#fde8ec';
+          lbl.style.color       = bright ? '#ffffff'  : '#7a0010';
+          val.style.color       = bright ? '#ffffff'  : '#7a0010';
+          sensorFlickPhase = 1 - sensorFlickPhase;
+          sensorFlickTimer = setTimeout(flick, 600);
+        };
+        flick();
+      }
+    }
 
     async function pollStatus() {
       try {
-        const res = await fetch(`${API_BASE}/status`, { signal: AbortSignal.timeout(2500) });
+        const res  = await fetch(`${API_BASE}/status`, { signal: AbortSignal.timeout(2500) });
         const data = await res.json();
 
         lastDataReceived = Date.now();
-        lastRenderData = data;
+        lastRenderData   = data;
 
         if (data.timestamp !== lastTimestamp) {
-          lastTimestamp = data.timestamp;
-          currentLevel = data.level_cm;
+          lastTimestamp      = data.timestamp;
+          lastNewReadingTime = Date.now();
+          currentLevel       = data.level_cm;
 
           const now = new Date();
           const pad = n => String(n).padStart(2, '0');
           history.push({
-            cm: currentLevel,
+            cm:   currentLevel,
             time: `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`,
           });
           if (history.length > 60) history.shift();
@@ -1204,12 +1587,13 @@
       }
     }
 
-    // ── SENSOR OFFLINE WATCHDOG ───────────────────────────────────────────────────
+    // ── SENSOR OFFLINE WATCHDOG ── single source of truth for sensor dot ─────────
     setInterval(() => {
-      const stale = !lastDataReceived || (Date.now() - lastDataReceived) > 10000;
-      if (stale) {
-        document.getElementById('sensor-dot').className = 'dot offline';
-        document.getElementById('sensor-val').textContent = langEN ? 'Offline' : 'ออฟไลน์';
+      const sensorFresh = lastNewReadingTime && (Date.now() - lastNewReadingTime) < 10000;
+      setSensorDot(!!sensorFresh);
+
+      const apiStale = !lastDataReceived || (Date.now() - lastDataReceived) > 10000;
+      if (apiStale) {
         document.getElementById('upd-val').textContent = 'No signal';
         updateWifi(null);
         updateLink(false);
@@ -1220,8 +1604,17 @@
     setInterval(() => {
       langEN = !langEN;
       render(lastRenderData);
-      // Don't overwrite evacuate caption with lang toggle
       if (!evacuateShowing) setCaption(getAnn(getStatus(currentLevel)));
+
+      // Update sensor val text if offline
+      if (!sensorOnline) {
+        document.getElementById('sensor-val').textContent = langEN ? 'Offline' : 'ออฟไลน์';
+        const ft = document.getElementById('fatal-text');
+        if (ft) ft.innerHTML = (langEN
+          ? 'FATAL ERROR — Sensor is offline. Water reading is the last data the sensor has sent.'
+          : 'ข้อผิดพลาดร้ายแรง — เซนเซอร์ออฟไลน์ ค่าระดับน้ำเป็นข้อมูลล่าสุดที่เซนเซอร์ส่งมา')
+          + `<span id="fatal-lastval">${currentLevel !== null ? ` (${currentLevel} cm)` : ''}</span>`;
+      }
     }, 10000);
 
     // ── BOOT ──────────────────────────────────────────────────────────────────────
